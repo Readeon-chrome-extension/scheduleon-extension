@@ -1,3 +1,6 @@
+/* Copyright (C) [2024] [Scheduleon]
+ This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
+ */
 declare module 'virtual:reload-on-update-in-background-script' {
   export const reloadOnUpdate: (watchPath: string) => void;
   export default reloadOnUpdate;

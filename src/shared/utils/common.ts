@@ -1,4 +1,7 @@
 // Function to get event listeners of a given node
+/* Copyright (C) [2024] [Scheduleon]
+ This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
+ */
 export const getEventListeners = (node: EventTarget): Record<string, EventListener[]> => {
   const eventListeners: Record<string, EventListener[]> = {};
   const allEvents = [

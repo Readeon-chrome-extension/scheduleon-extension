@@ -1,0 +1,205 @@
+/* Copyright (C) [2024] [Scheduleon]
+ This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
+ */
+@import '@assets/style/theme.scss';
+@import 'react-tooltip/dist/react-tooltip.css';
+
+.common_button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
+  font-size: var(--component-fontSizes-button-md);
+  font-weight: var(--component-fontWeights-button-default);
+  font-family: var(--global-fontStack-button);
+  text-decoration: none;
+  color: var(--component-button-onAction-default);
+  background-color: var(--component-button-action-default);
+  border: var(--global-borderWidth-thin) solid var(--global-border-action-default);
+  min-height: 35px;
+  max-height: 35px;
+  padding: 0 18px 0 20px;
+  border-radius: var(--global-radius-md);
+  outline-offset: 0;
+  line-height: var(--component-lineHeights-button);
+  width: unset;
+  white-space: unset;
+}
+
+.overlay__close {
+  position: fixed;
+  right: 12px;
+  top: 8px;
+  height: 25px;
+  width: 25px;
+  cursor: pointer;
+}
+
+.date-picker {
+  color: var(--global-content-regular-default);
+  appearance: none;
+  background: none;
+  box-sizing: border-box;
+  border: none;
+  display: block;
+  line-height: 1.5;
+  resize: none;
+  text-align: left;
+  outline: none;
+  width: 100%;
+  min-height: 38px;
+  transition: border-color var(--global-transition-regular-duration) var(--global-transition-regular-easing);
+  padding: 8px 12px;
+  font-size: var(--global-fontSizes-body-md) !important;
+}
+
+.date-picker-outer-wrapper {
+  height: fit-content;
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  cursor: text;
+  display: flex;
+  flex-direction: row;
+}
+
+.date-picker-wrapper {
+  position: relative;
+  display: flex;
+  height: 40px;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-flex: 1;
+  flex-grow: 1;
+  background: var(--global-bg-base-default);
+  border-color: var(--global-border-action-default);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: var(--global-radius-md);
+  box-sizing: border-box;
+  outline-offset: -2px;
+  overflow: hidden;
+}
+
+.date-time-picker-container {
+  display: flex;
+  -webkit-box-pack: justify;
+  gap: 8px;
+  -webkit-box-align: center;
+  align-items: center;
+  gap: var(--global-space-8);
+  margin-top: var(--global-space-8);
+  margin-bottom: var(--global-space-4);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.access-rules-checkbox {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.access-rules-label-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+
+
+.access-rules-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 600px;
+  margin-bottom: 30px;
+  overflow-y: auto;
+}
+
+.access-rules-label-description {
+  font-family: var(--global-fontStack-body);
+  font-weight: var(--global-fontWeights-body-default);
+  letter-spacing: var(--global-letterSpacing-body);
+  line-height: var(--global-lineHeights-body);
+  font-size: var(--global-fontSizes-body-md);
+  color: var(--global-content-muted-default);
+  margin: 0px;
+}
+
+.access-rules-label {
+  text-transform: capitalize;
+}
+
+.error-text {
+  color: #f43333;
+  margin: 5px 5px;
+  text-align: center;
+}
+
+.footer-button-container {
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  width: 100%;
+  text-align: center;
+}
+
+.confirmation-text {
+  font-family: var(--global-fontStack-body);
+  font-weight: 400;
+  letter-spacing: var(--global-letterSpacing-body);
+  line-height: var(--global-lineHeights-body);
+  font-size: 15px;
+  color: var(--global-content-regular-default);
+  margin: 0px;
+  text-align: center;
+}
+
+.timer-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.feedback-text-area {
+  color: var(--global-content-regular-default);
+  appearance: none;
+  background: none;
+  border-color: var(--global-border-action-default);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: var(--global-radius-md);
+  display: block;
+  line-height: 1.5;
+  resize: none;
+  text-align: left;
+  outline: none;
+  min-height: 100px;
+  transition: border-color var(--global-transition-regular-duration) var(--global-transition-regular-easing);
+  padding: 8px 12px;
+  font-size: var(--global-fontSizes-body-md);
+  width: 92%;
+}
+
+.flex {
+  display: flex;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
+.w-60 {
+  width: 60%;
+}
+
+.w-30 {
+  width: 30%;
+}

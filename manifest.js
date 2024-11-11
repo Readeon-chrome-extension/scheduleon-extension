@@ -21,6 +21,12 @@ const manifest = {
     service_worker: 'src/pages/background/index.js',
     type: 'module',
   },
+  options_page: 'src/pages/options/index.html',
+  browser_specific_settings: {
+    gecko: {
+      id: '{d46c10f5-0b43-45dd-93a0-644d0e6df2f4}', // Use your generated UUID here
+    },
+  },
   action: {
     default_popup: 'src/pages/popup/index.html',
     default_icon: 'scheduleon-logo.png',

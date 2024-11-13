@@ -4,13 +4,9 @@
 import csrfTokenStorage from '@root/src/shared/storages/csrf-token-storage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 
-import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
-import schedulingCounterStorage from '@root/src/shared/storages/schedulingCounterStorage';
-import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
-import axios from 'axios';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
-import { createPayloadObj, schedulingStart } from './utils';
+import { schedulingStart } from './utils';
 
 refreshOnUpdate('pages/content/windowEventListener/index');
 (() => {
@@ -52,7 +48,6 @@ const fileDataUpdateId = async (responseData: any) => {
     }
     return file;
   });
-  console.log('file id attach', { updatedFiles });
 
   fileDataStorage.setFileData(updatedFiles);
 };
@@ -60,7 +55,6 @@ const deleteAttachment = async (id: string) => {
   const files = await fileDataStorage.get();
   const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
   const updatedFiles = parsedFiles?.filter(file => file?.id !== id);
-  console.log('deleted files data', updatedFiles);
 
   fileDataStorage.setFileData(updatedFiles);
 };
@@ -70,7 +64,6 @@ const updateImageFiles = async (data: any) => {
   const attachmentMedia = parsedFiles?.filter(item => item?.media_type === 'attachment_data');
   const image_order = data?.data?.attributes?.post_metadata?.image_order;
   const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
-  console.log('attachmentMedia', { attachmentMedia, filteredImages });
 
   fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
 };

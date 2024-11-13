@@ -55,13 +55,13 @@ export const schedulingStart = async (body: any, headers: headersType, url: stri
     try {
       const postId = await makeCreatePostCall(
         headers,
-        csrf ?? headers['X-CSRF-Signature'],
+        headers['X-CSRF-Signature'] ?? csrf,
         body?.data?.attributes?.post_type,
       );
       await makePatchCall(
         postId,
         headers,
-        csrf ?? headers['X-CSRF-Signature'],
+        headers['X-CSRF-Signature'] ?? csrf,
         details?.date_time,
         details?.access_rule_id,
         body,

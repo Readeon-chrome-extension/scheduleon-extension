@@ -22,6 +22,7 @@ import { toast, Toaster } from 'sonner';
 import SchedulingFeedback from './schedulingFeedback';
 import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
+import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 
 function convertCentsToDollars(cents: number) {
   if (typeof cents !== 'number' || isNaN(cents)) {
@@ -60,13 +61,20 @@ const OverlayView = () => {
       setTimeout(() => hidePostAccess(startTime), 300);
       return;
     }
-    const selectors = isNewUI ? [1, 2, 4, 5] : [1, 2, 3, 4, 5];
+    const selectors = isNewUI
+      ? ['#audience-selector', '#sell-post-toggle', '#scheduled-for-toggle', '#early-access-toggle']
+      : [1, 2, 3, 4, 5];
 
     injectOverlayViewBtn();
-    selectors?.forEach((selector: number) => {
-      const element = postAccessRoot.children[selector];
-      element?.setAttribute('style', 'display:none;');
+    selectors?.forEach((selector: string | number) => {
+      const element = isNewUI ? postAccessRoot?.querySelector(selector as string) : postAccessRoot.children[selector];
+      if (element) {
+        const closest = isNewUI ? element?.closest('[elevation="subtle"]') : element;
+
+        closest?.setAttribute('style', 'display:none;');
+      }
     });
+    isPublishScreenStorage.setScreen(true);
   };
 
   const handleContinueBtn = () => {
@@ -180,7 +188,11 @@ const OverlayView = () => {
 
     await accessRulesStorage.add(sortedData);
   };
-
+  const OnChromeMessage = React.useCallback(action => {
+    if (action.message === 'scheduling-option-modal') {
+      setIsOpen(true);
+    }
+  }, []);
   React.useEffect(() => {
     window.addEventListener('message', handleMessage);
     let continueWithAuthoreonBtn;
@@ -204,9 +216,12 @@ const OverlayView = () => {
       }
     });
     observer.observe(document?.body, { childList: true, subtree: true });
+    chrome.runtime.onMessage.addListener(OnChromeMessage);
 
     return () => {
+      //cleanup all the listener
       observer.disconnect();
+      chrome.runtime.onMessage.removeListener(OnChromeMessage);
       const backBtn = document.querySelector(config.pages.backButton);
       continueWithAuthoreonBtn?.removeEventListener('click', handleContinueBtn);
       backBtn.removeEventListener('click', handleBackBtn);
@@ -222,18 +237,21 @@ const OverlayView = () => {
     imageFileHandler(files);
   }, []);
 
-  const addMoreImagesHandler = () => {
-    const imageFileInput2: HTMLInputElement = document.querySelector(config.pages.addMoreImages);
-
+  const addMoreImagesHandler = (imageFileInput2: HTMLInputElement) => {
     imageFileInput2?.removeEventListener('change', callBack);
     imageFileInput2?.addEventListener('change', callBack);
   };
   React.useEffect(() => {
-    if (fileStorage?.data) {
-      addMoreImagesHandler();
+    const selectImage = document.querySelector('[data-tag="IconPhoto"]');
+
+    if (selectImage) {
+      const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
+      addMoreImagesHandler(imageFileInput);
     }
+
     return () => {
       const imageFileInput2: HTMLInputElement = document.querySelector(config.pages.addMoreImages);
+
       imageFileInput2?.removeEventListener('change', callBack);
     };
   }, [fileStorage]);

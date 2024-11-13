@@ -8,7 +8,7 @@ import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 refreshOnUpdate('pages/content/banner/banner-script');
 
 const getBannerData = async () => {
-  const response = await fetch('https://www.readeon.com/api/banner/extension-banner?ext=Scheduleon');
+  const response = await fetch('https://www.readeon.com/api/banner?ext=Scheduleon');
   const data = await response?.json();
   return data;
 };
@@ -22,14 +22,14 @@ const getBannerData = async () => {
 
   if (!bannerData?.id) return;
 
-  const exitBanner = document.getElementById('custom-banner');
+  const exitBanner = document.getElementById('custom-banner-scheduleon');
   // Check if the banner is already shown on this page load
   if (exitBanner?.style?.display === 'block') return;
-
+  const isReadeonBanner = document.getElementById('custom-banner');
   // Create the banner element
   const banner = `
-    <div id='custom-banner' style='border: 2px solid var(--global-border-muted-default);overflow-wrap: anywhere; position:fixed;top:16px;left:5%;width:90%;padding:10px;background-color:var(--global-bg-base-default);color:var(--global-content-regular-default);text-align:center;z-index:1300;display:block;border-radius:6px;'>
-   <span id='banner-close-icon' style='display:block;float:right;margin-right:8px;font-size:22px;cursor:pointer;color:var(--global-content-regular-default);'>&#x2715;</span>
+    <div id='custom-banner-scheduleon' style='border: 2px solid var(--global-border-muted-default);overflow-wrap: anywhere; position:fixed;top:${isReadeonBanner ? '32%' : '16px'};left:5%;width:90%;padding:10px;background-color:var(--global-bg-base-default);color:var(--global-content-regular-default);text-align:center;z-index:1300;display:block;border-radius:6px;'>
+   <span id='banner-close-icon-scheduleon' style='display:block;float:right;margin-right:8px;font-size:22px;cursor:pointer;color:var(--global-content-regular-default);'>&#x2715;</span>
    <div>
     <h1>${bannerData?.title ?? ''}</h1>
     <div id="banner-message" >${bannerData?.message}</div>
@@ -39,10 +39,10 @@ const getBannerData = async () => {
   // Append the banner to the body
   document.body.insertAdjacentHTML('beforeend', banner);
 
-  const icon = document.getElementById('banner-close-icon');
+  const icon = document.getElementById('banner-close-icon-scheduleon');
 
   icon?.addEventListener('click', () => {
-    const exitBanner = document.getElementById('custom-banner');
+    const exitBanner = document.getElementById('custom-banner-scheduleon');
     exitBanner.style.display = 'none';
   });
 
@@ -50,7 +50,7 @@ const getBannerData = async () => {
 
   // Optionally, remove the banner after a few seconds
   setTimeout(() => {
-    const exitBanner = document.getElementById('custom-banner');
+    const exitBanner = document.getElementById('custom-banner-scheduleon');
     exitBanner.style.display = 'none';
   }, 15000);
 })();

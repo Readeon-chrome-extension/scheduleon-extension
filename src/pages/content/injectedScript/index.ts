@@ -28,6 +28,15 @@
             accessRules: accessRules?.included,
           });
         }
+        if (
+          url?.startsWith('https://www.patreon.com/api/media?json-api-version=1.0&json-api-use-default-includes=false')
+        ) {
+          const mediaResponse = await response?.clone()?.json();
+          window.parent.postMessage({
+            type: 'media-file-response',
+            mediaResponse: mediaResponse,
+          });
+        }
 
         return response;
       };
@@ -81,6 +90,26 @@
         }
       }
 
+      if (
+        init &&
+        init.body &&
+        init?.method === 'PATCH' &&
+        input?.startsWith('https://www.patreon.com/api/posts') &&
+        input.split('?')[1].startsWith('fields[post]')
+      ) {
+        const data = JSON.parse(init.body);
+        window.parent.postMessage({
+          type: 'post-update-response',
+          postData: data,
+        });
+      }
+      if (init && init?.method === 'DELETE' && input?.startsWith('https://www.patreon.com/api/media/')) {
+        const id = input?.split('/').pop().split('?')[0]; // '377788032'
+        window.parent.postMessage({
+          type: 'delete-attachments',
+          id: id,
+        });
+      }
       // Call the original fetch function with the modified request
       return originalFetch(input, init);
     };

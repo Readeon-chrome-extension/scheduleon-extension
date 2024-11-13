@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
+import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -18,6 +19,7 @@ export const backButtonHandler = () => {
   nextButton?.setAttribute('style', 'display:none;');
   overlayViewBtn?.remove();
   continueWithAuthoreon.setAttribute('style', 'display:block;');
+  isPublishScreenStorage.setScreen(false);
 };
 
 export const nextButtonHandler = () => {
@@ -72,23 +74,31 @@ function arrayBufferToBase64(buffer) {
   }
   return window.btoa(binary);
 }
-async function convertFilesToBuffers(fileList) {
+async function convertFilesToBuffers(fileList, media_type: string) {
   const fileBuffers = [];
   for (const file of fileList) {
     const buffer = await file.arrayBuffer();
     fileBuffers.push({
       name: file.name,
       type: file.type,
+      media_type: media_type,
       data: arrayBufferToBase64(buffer),
     });
   }
   return fileBuffers;
 }
+const getExistingFiles = async () => {
+  const existingFile = await fileDataStorage.get();
+  const parsedFiles = existingFile?.data ? JSON.parse(existingFile?.data) : [];
+  return parsedFiles;
+};
 export const imageFileHandler = async (files: any) => {
-  const fileBuffers = await convertFilesToBuffers(files);
-
+  const fileBuffers = await convertFilesToBuffers(files, 'image_data');
+  const existingFile = await getExistingFiles();
   if (fileBuffers?.length) {
-    await fileDataStorage.setFileData(fileBuffers);
+    console.log('added images');
+
+    await fileDataStorage.setFileData([...existingFile, ...fileBuffers]);
   }
 };
 export const attachmentsInput = () => {
@@ -99,10 +109,11 @@ export const attachmentsInput = () => {
   fileInput?.addEventListener('change', async () => {
     const files = fileInput?.files;
 
-    const fileBuffers = await convertFilesToBuffers(files);
+    const fileBuffers = await convertFilesToBuffers(files, 'attachment_data');
 
     if (fileBuffers?.length) {
-      await fileDataStorage.setFileData(fileBuffers);
+      const existingFile = await getExistingFiles();
+      await fileDataStorage.setFileData([...existingFile, ...fileBuffers]);
     }
   });
 

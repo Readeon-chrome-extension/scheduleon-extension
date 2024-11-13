@@ -49,9 +49,9 @@ refreshOnUpdate('pages/content/ui');
     overlayRootElement.insertAdjacentElement('beforeend', overlayRoot);
 
     const overlayRootIntoShadow = document.createElement('div');
-    overlayRootIntoShadow.id = 'overlay-shadow-root';
+    overlayRootIntoShadow.id = 'overlay-shadow-root-scheduleon';
 
-    overlayRoot.id = `patreon-chrome-extension-creator-overlay`;
+    overlayRoot.id = `patreon-chrome-extension-creator-overlay-scheduleon`;
 
     const styleDiv = document.createElement('div');
     overlayRoot.appendChild(overlayRootIntoShadow);

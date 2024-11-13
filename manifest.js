@@ -46,7 +46,7 @@ const manifest = {
       run_at: 'document_start',
     },
     {
-      matches: ['https://www.patreon.com/*'],
+      matches: ['https://www.patreon.com/*', 'https://chatgpt.com/*'],
       js: ['src/pages/contentWindowEventListener/index.js'],
       run_at: 'document_start',
     },

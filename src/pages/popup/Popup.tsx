@@ -11,18 +11,19 @@ import withSuspense from '@src/shared/hoc/withSuspense';
 import Header, { openOrFocusTab, patreonUrl, webURL } from './components/Header';
 import React from 'react';
 import userDataStorage from '@root/src/shared/storages/user-storage';
+import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 
 const Popup = () => {
   const theme = useStorage(themeStorage);
   const userData = useStorage(userDataStorage);
-
+  const isPublishScreen = useStorage(isPublishScreenStorage);
   const [currentUrl, setCurrentUrl] = React.useState<string>();
   const extEnabled = useStorage(extEnableStorage);
 
-  const handleClick = async () => {
+  const handleClick = async (messageType: 'Feedback' | 'Scheduling') => {
     chrome?.tabs?.query({ currentWindow: true, active: true }, function (tabs) {
       const activeTab = tabs[0];
-      const message = 'feedback_modal';
+      const message = messageType === 'Feedback' ? 'feedback_modal' : 'scheduling-option-modal';
       chrome?.tabs?.sendMessage(activeTab?.id, { message });
     });
   };
@@ -55,7 +56,7 @@ const Popup = () => {
         <div className={`flex w-full justify-center w-full flex-col items-center`}>
           <img
             style={{ margin: '8px 0' }}
-            src={theme === 'light' ? '../../../scheduleon-logo.png' : '../../../logo-white.png'}
+            src={theme === 'light' ? '../../../scheduleon-logo.png' : '../../../scheduleon-light.png'}
             height={80}
             width={80}
             alt="logo"
@@ -91,7 +92,7 @@ const Popup = () => {
         )}
 
         <>
-          {currentUrl?.startsWith(patreonUrl) && extEnabled && userData?.isLoggedIn && pathname.includes('edit') && (
+          {currentUrl?.startsWith(patreonUrl) && extEnabled && userData?.isLoggedIn && (
             <>
               <div className="flex flex-col  justify-center gap-4 mt-4">
                 {/* ToDO: will update this once do the monitoring */}
@@ -109,7 +110,7 @@ const Popup = () => {
                   <button
                     className="exe-pop-up-btn"
                     id="patreon-feedback-btn"
-                    onClick={handleClick}
+                    onClick={() => handleClick('Feedback')}
                     style={{ padding: 0, width: '195px', fontSize: '12px' }}>
                     Give Scheduleon Feedback
                   </button>
@@ -127,6 +128,15 @@ const Popup = () => {
                     style={{ padding: 0, width: '195px', fontSize: '12px' }}>
                     Support Scheduleon
                   </button>
+                  {pathname?.includes('edit') && isPublishScreen && (
+                    <button
+                      className="exe-pop-up-btn"
+                      id="patreon-scheduling-option"
+                      onClick={() => handleClick('Scheduling')}
+                      style={{ padding: 0, width: '195px', fontSize: '12px' }}>
+                      Scheduling Options
+                    </button>
+                  )}
                 </div>
               </div>
             </>

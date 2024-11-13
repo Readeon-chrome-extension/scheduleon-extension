@@ -19,11 +19,7 @@ const fileDataStorage: fileDataStorageType = {
   ...storage,
   setFileData: async (data: any) => {
     await storage.set(prev => {
-      if (prev?.data) {
-        return { data: JSON.stringify([...JSON.parse(prev.data), ...data]) };
-      } else {
-        return { data: JSON.stringify([...data]) };
-      }
+      return { data: JSON.stringify([...data]) };
     });
   },
 };

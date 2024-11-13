@@ -4,7 +4,9 @@
 import { Modal } from '@root/src/shared/components/modal/Modal';
 import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
+import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
+import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import { Clock } from 'lucide-react';
 import React from 'react';
@@ -14,7 +16,7 @@ const ConfirmationPopUp = () => {
   const [countdown, setCountdown] = React.useState<number>(0);
   const isScheduling = useStorage(isSchedulingStartStorage);
 
-  const [showTimer, setShoTimer] = React.useState<boolean>(false);
+  const [showTimer, setShowTimer] = React.useState<boolean>(false);
 
   const beforeUnloadHandler = React.useCallback(event => {
     // Recommended
@@ -27,7 +29,7 @@ const ConfirmationPopUp = () => {
     let timer;
 
     if (isOpen) {
-      setShoTimer(true);
+      setShowTimer(true);
       window.addEventListener('beforeunload', beforeUnloadHandler);
       // Calculate initial remaining time
       const calculateRemainingTime = () => {
@@ -52,8 +54,10 @@ const ConfirmationPopUp = () => {
           localStorage.removeItem('scheduling-data');
           schedulingStorage.add([]).then();
           fileDataStorage.set(null).then();
+          isPublishScreenStorage.setScreen(false);
+          postContentStorage.setPostContent(null);
 
-          setShoTimer(false);
+          setShowTimer(false);
           clearInterval(timer);
 
           setTimeout(() => {
@@ -66,7 +70,7 @@ const ConfirmationPopUp = () => {
     // Cleanup interval on component unmount or when `isScheduling` changes
     return () => {
       isSchedulingStartStorage.add(false, 0).then();
-      setShoTimer(false);
+      setShowTimer(false);
       window.removeEventListener('beforeunload', beforeUnloadHandler);
       clearInterval(timer);
     };

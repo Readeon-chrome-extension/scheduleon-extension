@@ -48,7 +48,7 @@ const OverlayView = () => {
   const hidePostAccess = (startTime: number = Date.now()) => {
     const isNewUI = document
       .querySelector(config.pages.headerRootSelector)
-      ?.parentElement?.querySelector(config.pages.postAccessRootNew);
+      ?.parentElement?.parentElement?.querySelector(config.pages.postAccessRootNew);
 
     const postAccessRoot = isNewUI ? isNewUI : document.querySelector(config.pages.postAccessRoot);
 

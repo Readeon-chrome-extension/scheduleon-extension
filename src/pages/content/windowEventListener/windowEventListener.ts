@@ -52,15 +52,12 @@ const fileDataUpdateId = async (responseData: any) => {
     }
     return file;
   });
-  console.log('file id attach', { updatedFiles });
 
   fileDataStorage.setFileData(updatedFiles);
 };
 const deleteAttachment = async (id: string) => {
   const files = await fileDataStorage.get();
   const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-  const updatedFiles = parsedFiles?.filter(file => file?.id !== id);
-  console.log('deleted files data', updatedFiles);
 
   fileDataStorage.setFileData(updatedFiles);
 };
@@ -70,7 +67,6 @@ const updateImageFiles = async (data: any) => {
   const attachmentMedia = parsedFiles?.filter(item => item?.media_type === 'attachment_data');
   const image_order = data?.data?.attributes?.post_metadata?.image_order;
   const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
-  console.log('attachmentMedia', { attachmentMedia, filteredImages });
 
   fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
 };

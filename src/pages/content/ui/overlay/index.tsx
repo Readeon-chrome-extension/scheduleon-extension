@@ -20,10 +20,7 @@ refreshOnUpdate('pages/content/ui');
       // If the addedNodes property has one or more nodes
       if (mutation.addedNodes.length) {
         const overlayInjectRootEle = document.querySelector(config.pages.overlyMountRootSelector);
-        const rootElement = document.querySelector(config.pages.headerRootSelector);
-        const overlayViewBtnELe = rootElement?.parentElement?.querySelector(
-          config.pages.continueWithAuthoreonBtnInjectSelector,
-        );
+        const overlayViewBtnELe = document?.querySelector(config.pages.continueWithAuthoreonBtnInjectSelector);
 
         if (overlayViewBtnELe && !overlayShowBtnInjected) {
           overlayShowBtnInjected = true;
@@ -37,6 +34,7 @@ refreshOnUpdate('pages/content/ui');
     }
   });
   observer.observe(document?.body, { childList: true, subtree: true });
+
   const mountOverlay = async (overlayRootElement: Element) => {
     const isValidView = await checkValidView();
     const extEnable = await extEnableStorage.get();

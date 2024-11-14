@@ -58,6 +58,7 @@ const fileDataUpdateId = async (responseData: any) => {
 const deleteAttachment = async (id: string) => {
   const files = await fileDataStorage.get();
   const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
+  const updatedFiles = parsedFiles?.filter(file => file?.id !== id);
 
   fileDataStorage.setFileData(updatedFiles);
 };

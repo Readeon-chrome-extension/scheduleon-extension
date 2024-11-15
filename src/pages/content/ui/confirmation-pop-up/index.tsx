@@ -1,6 +1,7 @@
 /* Copyright (C) [2024] [Scheduleon]
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
+import { Loader } from '@root/src/shared/components/loader/Loader';
 import { Modal } from '@root/src/shared/components/modal/Modal';
 import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
@@ -13,7 +14,7 @@ import React from 'react';
 
 const ConfirmationPopUp = () => {
   const [isOpen, setOpen] = React.useState<boolean>(false);
-  const [countdown, setCountdown] = React.useState<number>(0);
+
   const isScheduling = useStorage(isSchedulingStartStorage);
 
   const [showTimer, setShowTimer] = React.useState<boolean>(false);
@@ -32,49 +33,66 @@ const ConfirmationPopUp = () => {
       setShowTimer(true);
       window.addEventListener('beforeunload', beforeUnloadHandler);
       // Calculate initial remaining time
-      const calculateRemainingTime = () => {
-        const currentTime = Date.now();
-        const remainingTime = Math.max(0, isScheduling?.endTime - currentTime);
-        setCountdown(remainingTime);
-        return remainingTime;
-      };
+      // const calculateRemainingTime = () => {
+      //   const currentTime = Date.now();
+      //   const remainingTime = Math.max(0, isScheduling?.endTime - currentTime);
+      //   setCountdown(remainingTime);
+      //   return remainingTime;
+      // };
 
-      calculateRemainingTime();
+      // calculateRemainingTime();
 
-      // Update the countdown every second
-      timer = setInterval(() => {
-        const remainingTime = calculateRemainingTime();
+      // // Update the countdown every second
+      // timer = setInterval(() => {
+      //   const remainingTime = calculateRemainingTime();
 
-        // Stop scheduling when countdown reaches 0
-        if (remainingTime <= 0) {
-          isSchedulingStartStorage.add(false, 0).then();
-          window.removeEventListener('beforeunload', beforeUnloadHandler);
+      //   // Stop scheduling when countdown reaches 0
+      //   if (remainingTime <= 0) {
+      //     isSchedulingStartStorage.add(false, 0).then();
+      //     window.removeEventListener('beforeunload', beforeUnloadHandler);
 
-          //cleaning the local storage
-          localStorage.removeItem('scheduling-data');
-          schedulingStorage.add([]).then();
-          fileDataStorage.set(null).then();
-          isPublishScreenStorage.setScreen(false);
-          postContentStorage.setPostContent(null);
+      //     //cleaning the local storage
+      //     localStorage.removeItem('scheduling-data');
+      //     schedulingStorage.add([]).then();
+      //     fileDataStorage.set(null).then();
+      //     isPublishScreenStorage.setScreen(false);
+      //     postContentStorage.setPostContent(null);
 
-          setShowTimer(false);
-          clearInterval(timer);
+      //     setShowTimer(false);
+      //     clearInterval(timer);
 
-          setTimeout(() => {
-            window.open('https://www.patreon.com/library', '_self');
-          }, 1000);
-        }
-      }, 1000);
+      //     setTimeout(() => {
+      //       window.open('https://www.patreon.com/library', '_self');
+      //     }, 1000);
+      //   }
+      // }, 1000);
     }
 
     // Cleanup interval on component unmount or when `isScheduling` changes
     return () => {
-      isSchedulingStartStorage.add(false, 0).then();
+      isSchedulingStartStorage.add(false, 0, 'Pending').then();
       setShowTimer(false);
       window.removeEventListener('beforeunload', beforeUnloadHandler);
       clearInterval(timer);
     };
   }, [isOpen]);
+  React.useEffect(() => {
+    if (!isScheduling?.start && isScheduling?.schedulingState === 'Complete') {
+      isSchedulingStartStorage.add(false, 0, 'Pending').then();
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+
+      //cleaning the local storage
+      localStorage.removeItem('scheduling-data');
+      schedulingStorage.add([]).then();
+      fileDataStorage.set(null).then();
+      isPublishScreenStorage.setScreen(false);
+      postContentStorage.setPostContent(null);
+
+      setTimeout(() => {
+        window.open('https://www.patreon.com/library', '_self');
+      }, 1000);
+    }
+  }, [isScheduling]);
 
   const formatTime = milliseconds => {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -108,9 +126,13 @@ const ConfirmationPopUp = () => {
 
                 <p className="confirmation-text">
                   Please wait while Scheduleon takes care of your scheduling. You will be redirected to your Library
-                  page once the timer ends.
+                  page once posts are scheduled.
                 </p>
-                {showTimer && <p className="timer-text ">{formatTime(countdown)}</p>}
+                {showTimer && (
+                  <>
+                    <Loader />
+                  </>
+                )}
                 {/* <button
                   className="common_button"
                   style={{

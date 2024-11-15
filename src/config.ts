@@ -17,6 +17,8 @@ export interface Config {
     imageInputField: string;
     attachmentsInput: string;
     addMoreImages: string;
+    sideBarNavElementSelector: string;
+    sideBarSelector: string;
   };
 }
 export default {
@@ -34,5 +36,7 @@ export default {
     imageInputField: '[accept="image/x-png,image/gif,image/jpeg,image/png"]',
     attachmentsInput: '#add-attachments-button > input',
     addMoreImages: '[aria-label="Add more images"]',
+    sideBarNavElementSelector: '[data-tag="navbar"] > nav > div',
+    sideBarSelector: 'main-app-navigation',
   },
 } as Config;

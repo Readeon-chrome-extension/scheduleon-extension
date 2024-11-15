@@ -23,6 +23,7 @@ import SchedulingFeedback from './schedulingFeedback';
 import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
+import postContentStorage from '@root/src/shared/storages/post-content-storage';
 
 function convertCentsToDollars(cents: number) {
   if (typeof cents !== 'number' || isNaN(cents)) {
@@ -40,6 +41,8 @@ const OverlayView = () => {
   const schedulingCounter = useStorage(schedulingCounterStorage);
   const fileStorage = useStorage(fileDataStorage);
   const accessRuleData = useStorage(accessRulesStorage);
+  const parsedFiles = fileStorage?.data ? JSON.parse(fileStorage?.data) : [];
+  console.log('parsed files', { parsedFiles });
 
   const [schedulingPopUp, setSchedulingPopUp] = React.useState<boolean>(false);
 
@@ -225,6 +228,11 @@ const OverlayView = () => {
       const backBtn = document.querySelector(config.pages.backButton);
       continueWithAuthoreonBtn?.removeEventListener('click', handleContinueBtn);
       backBtn.removeEventListener('click', handleBackBtn);
+      localStorage.removeItem('scheduling-data');
+      schedulingStorage.add([]).then();
+      fileDataStorage.set(null).then();
+      isPublishScreenStorage.setScreen(false);
+      postContentStorage.setPostContent(null);
     };
   }, []);
 
@@ -274,8 +282,15 @@ const OverlayView = () => {
     const selectedDate = new Date(`${date}T${time}`);
     const currentDate = new Date();
 
+    // Add 6 minutes to the current time for validation
+    const minFutureDate = new Date(currentDate.getTime() + 5 * 50000); // 6 minutes in milliseconds
     if (selectedDate <= currentDate) {
       setError({ message: 'You cannot select a past date', rowId });
+      return false;
+    }
+
+    if (selectedDate <= minFutureDate && parsedFiles?.length) {
+      setError({ message: 'Please select a time at least 5 minutes in the future', rowId });
       return false;
     }
 

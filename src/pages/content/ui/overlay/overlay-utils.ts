@@ -7,6 +7,8 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
+import { toast } from 'sonner';
+import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -94,9 +96,15 @@ const getExistingFiles = async () => {
 };
 export const imageFileHandler = async (files: any) => {
   const fileBuffers = await convertFilesToBuffers(files, 'image_data');
+  const isWarningShow = await isWarningShowStorage.get();
   const existingFile = await getExistingFiles();
   if (fileBuffers?.length) {
-    console.log('added images');
+    if (!isWarningShow) {
+      toast.warning('Scheduleon Warning: Attaching multiple files or large files may lead to performance issues', {
+        closeButton: true,
+      });
+      isWarningShowStorage.add(true);
+    }
 
     await fileDataStorage.setFileData([...existingFile, ...fileBuffers]);
   }
@@ -108,11 +116,17 @@ export const attachmentsInput = () => {
 
   fileInput?.addEventListener('change', async () => {
     const files = fileInput?.files;
-
+    const isWarningShow = await isWarningShowStorage.get();
     const fileBuffers = await convertFilesToBuffers(files, 'attachment_data');
 
     if (fileBuffers?.length) {
       const existingFile = await getExistingFiles();
+      if (!isWarningShow) {
+        toast.warning('Scheduleon Warning: Attaching multiple files or large files may lead to performance issues', {
+          closeButton: true,
+        });
+        isWarningShowStorage.add(true);
+      }
       await fileDataStorage.setFileData([...existingFile, ...fileBuffers]);
     }
   });

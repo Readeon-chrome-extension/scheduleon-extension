@@ -47,7 +47,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       const patreonSession = await chrome.cookies?.get({ url: 'https://www.patreon.com', name: 'session_id' });
 
       userDataStorage.add({ isLoggedIn: !!patreonSession });
-      console.log('onUpdated', shownTabs);
 
       if (!shownTabs[tabId] && patreonSession?.value) {
         // Check if banner has already been shown on this tab
@@ -71,8 +70,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 // Listen for tab removal to clear stored data
 chrome.tabs.onRemoved.addListener(tabId => {
   if (shownTabs[tabId]) {
-    console.log('onRemoved', shownTabs);
-
     delete shownTabs[tabId];
   }
 });
@@ -82,7 +79,6 @@ chrome.tabs.onActivated.addListener(activeInfo => {
 
   // Clear the shown status when the tab becomes inactive
   if (shownTabs[tabId]) {
-    console.log('onActivated', shownTabs);
     delete shownTabs[tabId];
   }
 });
@@ -92,6 +88,9 @@ function isPatreonUrl(url: string) {
 chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'Reload_Patreon') {
     reloadPatreon();
+  }
+  if (request.action === 'Open_PopUp') {
+    chrome.action.openPopup().then();
   }
 });
 console.log('background loaded');

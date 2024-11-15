@@ -15,7 +15,7 @@ const manifest = {
   name: '__MSG_extensionName__',
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
-  permissions: ['storage', 'tabs', 'cookies', 'scripting'],
+  permissions: ['storage', 'tabs', 'cookies', 'scripting', 'unlimitedStorage'],
   host_permissions: ['https://www.patreon.com/*'],
   background: {
     service_worker: 'src/pages/background/index.js',
@@ -42,11 +42,11 @@ const manifest = {
   content_scripts: [
     {
       matches: ['https://www.patreon.com/*'],
-      js: ['src/pages/injector/index.js'],
+      js: ['src/pages/contentInjector/index.js'],
       run_at: 'document_start',
     },
     {
-      matches: ['https://www.patreon.com/*', 'https://chatgpt.com/*'],
+      matches: ['https://www.patreon.com/*'],
       js: ['src/pages/contentWindowEventListener/index.js'],
       run_at: 'document_start',
     },

@@ -4,6 +4,7 @@
 import userDataStorage from '@root/src/shared/storages/user-storage';
 import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
+import { patreonUrl } from '../popup/components/Header';
 
 // reloadOnUpdate('pages/background');
 
@@ -91,6 +92,9 @@ chrome.runtime.onMessage.addListener(request => {
   }
   if (request.action === 'Open_PopUp') {
     chrome.action.openPopup().then();
+  }
+  if (request.action === 'redirect-library-page') {
+    openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
   }
 });
 console.log('background loaded');

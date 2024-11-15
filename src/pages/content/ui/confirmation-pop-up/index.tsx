@@ -7,6 +7,7 @@ import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
+import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import { Clock } from 'lucide-react';
@@ -83,24 +84,25 @@ const ConfirmationPopUp = () => {
 
       //cleaning the local storage
       localStorage.removeItem('scheduling-data');
+      isWarningShowStorage.add(false);
       schedulingStorage.add([]).then();
       fileDataStorage.set(null).then();
       isPublishScreenStorage.setScreen(false);
       postContentStorage.setPostContent(null);
 
       setTimeout(() => {
-        window.open('https://www.patreon.com/library', '_self');
+        chrome.runtime.sendMessage({ action: 'redirect-library-page' });
       }, 1000);
     }
   }, [isScheduling]);
 
-  const formatTime = milliseconds => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  // const formatTime = milliseconds => {
+  //   const totalSeconds = Math.floor(milliseconds / 1000);
+  //   const minutes = Math.floor((totalSeconds % 3600) / 60);
+  //   const seconds = totalSeconds % 60;
 
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
+  //   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  // };
 
   React.useEffect(() => {
     if (isScheduling?.start) setOpen(isScheduling?.start);

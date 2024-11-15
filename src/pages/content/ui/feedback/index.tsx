@@ -41,7 +41,9 @@ const FeedbackPopUp = () => {
     };
 
     chrome?.runtime?.onMessage?.addListener(handleChromeMessage);
-    const feedbackBtnEle = document.getElementById('patreon-feedback-btn');
+
+    const feedbackBtnEle = document.getElementById('support-scheduleon-feedback');
+
     if (feedbackBtnEle) {
       const openModal = () => setIsModalOpen(true);
       feedbackBtnEle.addEventListener('click', openModal);

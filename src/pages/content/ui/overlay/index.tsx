@@ -98,4 +98,57 @@ refreshOnUpdate('pages/content/ui');
 
     return true;
   };
+
+  const injectButtonListener = () => {
+    const scheduleonControl = document.getElementById('open-scheduleon-readeon-control');
+
+    if (!scheduleonControl) {
+      setTimeout(() => injectButtonListener(), 500);
+      return;
+    }
+
+    scheduleonControl?.addEventListener('click', async () => {
+      console.log('open pop up');
+
+      chrome.runtime.sendMessage({ action: 'Open_PopUp' });
+    });
+  };
+
+  const reportIssuePatreon = async () => {
+    const extEnabled = await extEnableStorage?.get();
+    const navElement = document?.querySelector(config.pages.sideBarNavElementSelector) as HTMLElement;
+    const sidebarEle = document.getElementById(config.pages.sideBarSelector);
+
+    if (navElement && extEnabled) {
+      navElement.style.flexDirection = 'column';
+      navElement.style.gap = '12px';
+    }
+    sidebarEle.style.zIndex = '1195';
+
+    const injectButton = `<div id="scheduleon-buttons-container" style="display:flex;flex-direction:column;gap:8px;"><button class="common_button" id="open-scheduleon-readeon-control" style='padding:0;width:190px;font-size:12px;'>Open Scheduleon Controls</button>
+    <button class="common_button" id="support-scheduleon-feedback" style='padding:0;width:190px;font-size:12px;'>Give Scheduleon Feedback</button>
+    </div>`;
+
+    if (extEnabled) navElement?.insertAdjacentHTML('beforeend', injectButton);
+    const sidebarElement = document?.getElementById('main-app-navigation');
+    const sideReadeonButtons = document?.getElementById('scheduleon-buttons-container') as HTMLElement;
+    if (sidebarElement?.clientWidth < 248) {
+      sideReadeonButtons.style.display = 'none';
+    }
+  };
+
+  window?.addEventListener('resize', () => {
+    const sideBarElement = document.getElementById('scheduleon-buttons-container') as HTMLElement;
+    const size = window.innerWidth;
+    if (sideBarElement) {
+      if (size < 978) {
+        sideBarElement.style.display = 'none';
+      } else if (size >= 978) {
+        sideBarElement.style.display = 'flex';
+      }
+    }
+  });
+  reportIssuePatreon();
+  //* this function runs one time and inject the buttons into the sidebar
+  injectButtonListener();
 })();

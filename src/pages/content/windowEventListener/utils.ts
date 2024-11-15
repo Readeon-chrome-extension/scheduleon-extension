@@ -73,7 +73,8 @@ export const schedulingStart = async (body: any, headers: headersType, url: stri
       console.log('error', { error });
     }
   }
-  await isSchedulingStartStorage.add(false, null);
+
+  await isSchedulingStartStorage.add(false, null, 'Complete');
 };
 
 //creating the new post
@@ -216,7 +217,6 @@ const makePatchCall = async (
   let imageMediaResponse;
   const fileData = await fileDataStorage.get();
   const parsedFile = fileData?.data ? JSON.parse(fileData?.data) : [];
-  console.log('parsed', { parsedFile });
 
   if (parsedFile?.length) {
     imageMediaResponse = await attachMedia(postId, headers, csrf ?? headers['X-CSRF-Signature'], parsedFile);
@@ -331,5 +331,5 @@ const hideDefaultPopUp = async (startTime: number = Date.now()) => {
 
   if (!counter.hasAnswered) await schedulingCounterStorage.add(false, countValue, false);
 
-  await isSchedulingStartStorage.add(true, endTime);
+  await isSchedulingStartStorage.add(true, endTime, 'Pending');
 };

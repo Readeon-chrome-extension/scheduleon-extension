@@ -31,7 +31,6 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
     if (event.data.type === 'post-update-response') {
       const data = event.data?.postData;
-      console.log('post-update-response', { data });
       updateImageFiles(data);
     }
     if (event.data.type === 'delete-attachments') {
@@ -67,7 +66,10 @@ const updateImageFiles = async (data: any) => {
   const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
   const attachmentMedia = parsedFiles?.filter(item => item?.media_type === 'attachment_data');
   const image_order = data?.data?.attributes?.post_metadata?.image_order;
-  const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
+  const isValid = image_order?.every(value => value !== null && value !== undefined);
+  if (isValid) {
+    const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
 
-  fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
+    fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
+  }
 };

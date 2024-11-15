@@ -2,13 +2,14 @@
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
 import { BaseStorage, createStorage, StorageType } from '@src/shared/storages/base';
-
+type TypeSchedulingState = 'Pending' | 'Complete';
 interface schedulingStartTime {
   start: boolean;
   endTime: number;
+  schedulingState: TypeSchedulingState;
 }
 type schedulingStartTypes = BaseStorage<schedulingStartTime> & {
-  add: (start: boolean, endTime: number) => Promise<void>;
+  add: (start: boolean, endTime: number, state: TypeSchedulingState) => Promise<void>;
 };
 
 const storage = createStorage<schedulingStartTime>('is-scheduling-start-storage-key', null, {
@@ -18,8 +19,8 @@ const storage = createStorage<schedulingStartTime>('is-scheduling-start-storage-
 
 const isSchedulingStartStorage: schedulingStartTypes = {
   ...storage,
-  add: async (start: boolean, endTime: number) => {
-    await storage.set({ start, endTime });
+  add: async (start: boolean, endTime: number, state) => {
+    await storage.set({ start, endTime, schedulingState: state });
   },
 };
 

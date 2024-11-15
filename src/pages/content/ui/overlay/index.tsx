@@ -9,6 +9,7 @@ import ConfirmationPopUp from '../confirmation-pop-up';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import extEnableStorage from '@root/src/shared/storages/extEnableStorage';
 import FeedbackPopUp from '../feedback';
+import ScheduleonControl from '../scheduleon-control';
 refreshOnUpdate('pages/content/ui');
 
 (() => {
@@ -60,6 +61,7 @@ refreshOnUpdate('pages/content/ui');
           <OverlayView />
           <ConfirmationPopUp />
           <FeedbackPopUp />
+          <ScheduleonControl />
         </>,
       );
     } catch (error) {
@@ -108,9 +110,7 @@ refreshOnUpdate('pages/content/ui');
     }
 
     scheduleonControl?.addEventListener('click', async () => {
-      console.log('open pop up');
-
-      chrome.runtime.sendMessage({ action: 'Open_PopUp' });
+      window.postMessage({ type: 'open-scheduleon-control' });
     });
   };
 

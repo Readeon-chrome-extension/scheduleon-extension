@@ -4,6 +4,7 @@
 import userDataStorage from '@root/src/shared/storages/user-storage';
 import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
+import { patreonUrl, webURL } from '../popup/components/Header';
 
 // reloadOnUpdate('pages/background');
 
@@ -92,5 +93,27 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'Open_PopUp') {
     chrome.action.openPopup().then();
   }
+  if (request.action === 'how-to-use-scheduleon') {
+    openOrFocusTab(`${webURL}/faq`, webURL);
+  }
+  if (request.action === 'support-scheduleon') {
+    openOrFocusTab(`${patreonUrl}/DemocraticDeveloper`, patreonUrl);
+  }
+  if (request.action === 'feedback_modal') {
+    sendMessage(request.action);
+  }
+  if (request.action === 'scheduling-option-modal') {
+    sendMessage(request.action);
+  }
+  if (request.action === 'redirect-library-page') {
+    openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
+  }
 });
+const sendMessage = (message: string) => {
+  chrome?.tabs?.query({ currentWindow: true, active: true }, function (tabs) {
+    const activeTab = tabs[0];
+
+    chrome?.tabs?.sendMessage(activeTab?.id, { message });
+  });
+};
 console.log('background loaded');

@@ -7,6 +7,7 @@ import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
+import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import { Clock } from 'lucide-react';
@@ -16,8 +17,6 @@ const ConfirmationPopUp = () => {
   const [isOpen, setOpen] = React.useState<boolean>(false);
 
   const isScheduling = useStorage(isSchedulingStartStorage);
-
-  const [showTimer, setShowTimer] = React.useState<boolean>(false);
 
   const beforeUnloadHandler = React.useCallback(event => {
     // Recommended
@@ -30,7 +29,6 @@ const ConfirmationPopUp = () => {
     let timer;
 
     if (isOpen) {
-      setShowTimer(true);
       window.addEventListener('beforeunload', beforeUnloadHandler);
       // Calculate initial remaining time
       // const calculateRemainingTime = () => {
@@ -71,17 +69,18 @@ const ConfirmationPopUp = () => {
     // Cleanup interval on component unmount or when `isScheduling` changes
     return () => {
       isSchedulingStartStorage.add(false, 0, 'Pending').then();
-      setShowTimer(false);
       window.removeEventListener('beforeunload', beforeUnloadHandler);
       clearInterval(timer);
     };
   }, [isOpen]);
+
   React.useEffect(() => {
     if (!isScheduling?.start && isScheduling?.schedulingState === 'Complete') {
       isSchedulingStartStorage.add(false, 0, 'Pending').then();
       window.removeEventListener('beforeunload', beforeUnloadHandler);
 
       //cleaning the local storage
+      isWarningShowStorage.add(false);
       localStorage.removeItem('scheduling-data');
       schedulingStorage.add([]).then();
       fileDataStorage.set(null).then();
@@ -89,18 +88,18 @@ const ConfirmationPopUp = () => {
       postContentStorage.setPostContent(null);
 
       setTimeout(() => {
-        window.open('https://www.patreon.com/library', '_self');
+        chrome.runtime.sendMessage({ action: 'redirect-library-page' });
       }, 1000);
     }
   }, [isScheduling]);
 
-  const formatTime = milliseconds => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  // const formatTime = milliseconds => {
+  //   const totalSeconds = Math.floor(milliseconds / 1000);
+  //   const minutes = Math.floor((totalSeconds % 3600) / 60);
+  //   const seconds = totalSeconds % 60;
 
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
+  //   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  // };
 
   React.useEffect(() => {
     if (isScheduling?.start) setOpen(isScheduling?.start);
@@ -128,11 +127,9 @@ const ConfirmationPopUp = () => {
                   Please wait while Scheduleon takes care of your scheduling. You will be redirected to your Library
                   page once posts are scheduled.
                 </p>
-                {showTimer && (
-                  <>
-                    <Loader />
-                  </>
-                )}
+
+                <Loader />
+
                 {/* <button
                   className="common_button"
                   style={{

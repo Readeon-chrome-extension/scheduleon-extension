@@ -82,6 +82,7 @@ const ConfirmationPopUp = () => {
       //cleaning the local storage
       isWarningShowStorage.add(false);
       localStorage.removeItem('scheduling-data');
+      isWarningShowStorage.add(false);
       schedulingStorage.add([]).then();
       fileDataStorage.set(null).then();
       isPublishScreenStorage.setScreen(false);

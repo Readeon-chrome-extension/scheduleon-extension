@@ -79,6 +79,7 @@ refreshOnUpdate('pages/content/ui');
     overlayViewBtnELe.setAttribute('style', 'display:none;');
     const btn = `<div id="continue-with-authoreon-btn" ><button class="common_button" id="continue-authoreon-btn" style="padding:0 10px;font-size:14px;font-weight:700;min-height:40px;max-height:40px;">Continue With Scheduleon</button></div>`;
     if (overlayViewBtnELe?.parentElement && window.location.pathname?.includes('edit')) {
+      addWarningDiv();
       overlayViewBtnELe?.parentElement.setAttribute('style', 'display:flex;gap:8px;align-items:center;');
 
       overlayViewBtnELe?.parentElement?.insertAdjacentHTML('beforeend', btn);
@@ -99,6 +100,25 @@ refreshOnUpdate('pages/content/ui');
     }
 
     return true;
+  };
+  const addWarningDiv = () => {
+    const headerEle = document.querySelector(config.pages.headerRootSelector);
+    if (headerEle?.parentElement?.parentElement?.parentElement) {
+      const warningDiv = `<div
+      style="
+        border: var(--global-borderWidth-thin) solid var(--global-border-action-default);
+        border-radius: 'var(--global-radius-md)';
+        padding: 16px;
+        text-align: center;
+        color: #FF7F3E;
+        width:94%;
+        margin-bottom:12px;
+        font-size:14px;
+      ">
+    Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts
+    </div>`;
+      headerEle?.parentElement?.parentElement?.parentElement.insertAdjacentHTML('afterbegin', warningDiv);
+    }
   };
 
   const injectButtonListener = () => {

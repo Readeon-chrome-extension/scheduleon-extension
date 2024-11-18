@@ -93,8 +93,8 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'Open_PopUp') {
     chrome.action.openPopup().then();
   }
-  if (request.action === 'redirect-library-page') {
-    openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
-  }
+  // if (request.action === 'redirect-library-page') {
+  //   openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
+  // }
 });
 console.log('background loaded');

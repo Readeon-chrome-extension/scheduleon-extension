@@ -9,6 +9,8 @@ import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import { toast } from 'sonner';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
+import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
+import postContentStorage from '@root/src/shared/storages/post-content-storage';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -22,6 +24,7 @@ export const backButtonHandler = () => {
   overlayViewBtn?.remove();
   continueWithAuthoreon.setAttribute('style', 'display:block;');
   isPublishScreenStorage.setScreen(false);
+  setTimeout(attachmentsInput, 800);
 };
 
 export const nextButtonHandler = () => {
@@ -113,6 +116,7 @@ export const attachmentsInput = () => {
   const fileInput: HTMLInputElement = document.querySelector(config.pages.attachmentsInput);
 
   const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
+  console.log('fileInput', { fileInput });
 
   fileInput?.addEventListener('change', async () => {
     const files = fileInput?.files;
@@ -136,4 +140,22 @@ export const attachmentsInput = () => {
 
     imageFileHandler(files);
   });
+};
+
+const getDialogContainer = () => {
+  const containerOuter = document.querySelector('#post-creation-dailog');
+
+  // cleanup the local storage when user start scheduling post
+  const containerInner = containerOuter?.querySelector('[data-tag="dialog-container"]');
+  containerInner?.addEventListener('click', () => {
+    localStorage.removeItem('scheduling-data');
+    isWarningShowStorage.add(false);
+    schedulingStorage.add([]).then();
+    fileDataStorage.set(null).then();
+    isPublishScreenStorage.setScreen(false);
+    postContentStorage.setPostContent(null);
+  });
+};
+export const createPostBtnListener = () => {
+  setTimeout(getDialogContainer, 800);
 };

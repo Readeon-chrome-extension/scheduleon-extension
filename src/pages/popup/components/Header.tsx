@@ -23,7 +23,7 @@ export const openOrFocusTab = (newUrl: string, baseUrl: string) => {
   });
 };
 
-export const webURL = 'https://www.readeon.com';
+export const webURL = 'https://www.scheduleon.net';
 export const patreonUrl = 'https://www.patreon.com';
 const Header: FC<HeaderProps> = () => {
   const extEnable = useStorage(extEnableStorage);

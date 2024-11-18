@@ -108,6 +108,9 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'redirect-library-page') {
     openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
   }
+  // if (request.action === 'redirect-library-page') {
+  //   openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
+  // }
 });
 const sendMessage = (message: string) => {
   chrome?.tabs?.query({ currentWindow: true, active: true }, function (tabs) {

@@ -9,6 +9,7 @@ import {
   attachmentsInput,
   backButtonHandler,
   combineDateTime,
+  createPostBtnListener,
   customStyles,
   imageFileHandler,
   nextButtonHandler,
@@ -24,6 +25,7 @@ import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
+import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 
 function convertCentsToDollars(cents: number) {
   if (typeof cents !== 'number' || isNaN(cents)) {
@@ -263,6 +265,19 @@ const OverlayView = () => {
       imageFileInput2?.removeEventListener('change', callBack);
     };
   }, [fileStorage]);
+
+  const createPostBtnHandler = React.useCallback(createPostBtnListener, []);
+
+  // getting the create post button
+  React.useEffect(() => {
+    const createPostBtnEle = document?.querySelector(
+      'nav[aria-label="Creator navigation"] button[aria-label="Create post"]',
+    );
+    if (createPostBtnEle) {
+      createPostBtnEle?.removeEventListener('click', createPostBtnHandler);
+      createPostBtnEle?.addEventListener('click', createPostBtnHandler);
+    }
+  }, []);
 
   // Function to handle checkbox toggle
   const handleCheckboxChange = (access_rule_id: string) => {

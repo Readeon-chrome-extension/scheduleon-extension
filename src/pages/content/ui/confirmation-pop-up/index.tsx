@@ -83,6 +83,7 @@ const ConfirmationPopUp = () => {
       window.removeEventListener('beforeunload', beforeUnloadHandler);
 
       //cleaning the local storage
+      setOpen(false);
       localStorage.removeItem('scheduling-data');
       isWarningShowStorage.add(false);
       schedulingStorage.add([]).then();
@@ -91,18 +92,10 @@ const ConfirmationPopUp = () => {
       postContentStorage.setPostContent(null);
 
       setTimeout(() => {
-        chrome.runtime.sendMessage({ action: 'redirect-library-page' });
-      }, 1000);
+        window.open('https://www.patreon.com/library', '_self');
+      }, 500);
     }
   }, [isScheduling]);
-
-  // const formatTime = milliseconds => {
-  //   const totalSeconds = Math.floor(milliseconds / 1000);
-  //   const minutes = Math.floor((totalSeconds % 3600) / 60);
-  //   const seconds = totalSeconds % 60;
-
-  //   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  // };
 
   React.useEffect(() => {
     if (isScheduling?.start) setOpen(isScheduling?.start);

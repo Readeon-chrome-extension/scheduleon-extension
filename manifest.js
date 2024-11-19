@@ -70,6 +70,7 @@ const manifest = {
         'assets/fonts/*.ttf',
         'icon-128.png',
         'icon-34.png',
+        'scroll-dark.png',
         'src/pages/injectedScript/index.js',
       ],
       matches: ['*://*/*'],

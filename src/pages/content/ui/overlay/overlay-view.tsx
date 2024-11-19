@@ -24,8 +24,7 @@ import SchedulingFeedback from './schedulingFeedback';
 import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import postContentStorage from '@root/src/shared/storages/post-content-storage';
-import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
+import patreonThemeStorage from '@root/src/shared/storages/patreonThemeStorage';
 
 function convertCentsToDollars(cents: number) {
   if (typeof cents !== 'number' || isNaN(cents)) {
@@ -43,14 +42,14 @@ const OverlayView = () => {
   const schedulingCounter = useStorage(schedulingCounterStorage);
   const fileStorage = useStorage(fileDataStorage);
   const accessRuleData = useStorage(accessRulesStorage);
+  const patreonTheme = useStorage(patreonThemeStorage);
   const parsedFiles = fileStorage?.data ? JSON.parse(fileStorage?.data) : [];
-  console.log('parsed files', { parsedFiles });
 
   const [schedulingPopUp, setSchedulingPopUp] = React.useState<boolean>(false);
 
   const handleBackBtn = React.useCallback(backButtonHandler, []);
 
-  const hidePostAccess = (startTime: number = Date.now()) => {
+  const hidePostAccess = async (startTime: number = Date.now()) => {
     const isNewUI = document
       .querySelector(config.pages.headerRootSelector)
       ?.parentElement?.parentElement?.querySelector(config.pages.postAccessRootNew);
@@ -79,7 +78,7 @@ const OverlayView = () => {
         closest?.setAttribute('style', 'display:none;');
       }
     });
-    isPublishScreenStorage.setScreen(true);
+    await isPublishScreenStorage.setScreen(true);
   };
 
   const handleContinueBtn = () => {
@@ -231,10 +230,6 @@ const OverlayView = () => {
       continueWithAuthoreonBtn?.removeEventListener('click', handleContinueBtn);
       backBtn.removeEventListener('click', handleBackBtn);
       localStorage.removeItem('scheduling-data');
-      schedulingStorage.add([]).then();
-      fileDataStorage.set(null).then();
-      isPublishScreenStorage.setScreen(false);
-      postContentStorage.setPostContent(null);
     };
   }, []);
 
@@ -378,6 +373,7 @@ const OverlayView = () => {
       toast.error('Please ensure all selected tiers have a date and time');
     }
   };
+  console.log('patreonTheme', { patreonTheme });
 
   return (
     <>
@@ -395,7 +391,19 @@ const OverlayView = () => {
             data-tooltip-id="my-tooltip">
             <X size={25} />
           </div> */}
-          <h2 className="text-center">Scheduling Options</h2>
+          <div className="text-center">
+            <img
+              src={
+                patreonTheme === 'dark'
+                  ? chrome.runtime.getURL('scroll-dark.png')
+                  : chrome.runtime.getURL('scroll-dark.png')
+              }
+              style={{ height: '40px', width: '30px' }}
+            />
+          </div>
+          <h2 className="text-center" style={{ marginTop: '0px' }}>
+            Scheduling Options
+          </h2>
           <div className="access-rules-list-container ">
             {data?.map(rules => (
               <div key={rules.access_rule_id ?? 'key-1' + rules.title?.toLocaleLowerCase()}>

@@ -10,7 +10,7 @@ import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import postContentStorage from '@root/src/shared/storages/post-content-storage';
+import patreonThemeStorage from '@root/src/shared/storages/patreonThemeStorage';
 
 // reloadOnUpdate('pages/background');
 
@@ -52,6 +52,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     if (isPatreonUrl(tab.url)) {
       const patreonSession = await chrome.cookies?.get({ url: 'https://www.patreon.com', name: 'session_id' });
+      const themeValue = await chrome.cookies.get({ url: 'https://www.patreon.com', name: 'color_scheme_selection' });
+
+      await patreonThemeStorage.setTheme(themeValue?.value);
 
       userDataStorage.add({ isLoggedIn: !!patreonSession });
 
@@ -75,16 +78,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 // Listen for tab removal to clear stored data
-chrome.tabs.onRemoved.addListener(tabId => {
+chrome.tabs.onRemoved.addListener(async tabId => {
   if (shownTabs[tabId]) {
     delete shownTabs[tabId];
   }
-  isSchedulingStartStorage.add(false, 0, 'Pending').then();
-  isWarningShowStorage.add(false);
-  schedulingStorage.add([]).then();
-  fileDataStorage.set(null).then();
-  isPublishScreenStorage.setScreen(false);
-  postContentStorage.setPostContent(null);
+  await isSchedulingStartStorage.add(false, 0, 'Pending');
+  await isWarningShowStorage.add(false);
+  await schedulingStorage.add([]);
+  await fileDataStorage.set(null);
+  await isPublishScreenStorage.setScreen(false);
 });
 // Listen for when the tab becomes inactive
 chrome.tabs.onActivated.addListener(activeInfo => {
@@ -108,5 +110,17 @@ chrome.runtime.onMessage.addListener(request => {
   // if (request.action === 'redirect-library-page') {
   //   openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
   // }
+});
+//* this below listener is used to track the theme changes in the cookies
+
+let lastThemeValue = null;
+chrome.cookies.onChanged.addListener(async changeInfo => {
+  if (changeInfo.cookie.name === 'color_scheme_selection') {
+    const newThemeValue: string = changeInfo.cookie.value;
+    if (newThemeValue !== lastThemeValue) {
+      await patreonThemeStorage.setTheme(newThemeValue);
+      lastThemeValue = newThemeValue;
+    }
+  }
 });
 console.log('background loaded');

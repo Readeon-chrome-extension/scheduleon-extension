@@ -113,7 +113,7 @@ refreshOnUpdate('pages/content/ui');
         margin-bottom:12px;
         font-size:14px;
       ">
-    Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts
+ Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience
     </div>`;
       headerEle?.parentElement?.parentElement?.parentElement.insertAdjacentHTML('afterbegin', warningDiv);
     }

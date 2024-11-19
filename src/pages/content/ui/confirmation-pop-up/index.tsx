@@ -76,13 +76,13 @@ const ConfirmationPopUp = () => {
 
   React.useEffect(() => {
     if (!isScheduling?.start && isScheduling?.schedulingState === 'Complete') {
-      isSchedulingStartStorage.add(false, 0, 'Pending').then();
       window.removeEventListener('beforeunload', beforeUnloadHandler);
 
       //cleaning the local storage
       isWarningShowStorage.add(false);
       setOpen(false);
       localStorage.removeItem('scheduling-data');
+      isSchedulingStartStorage.add(false, 0, 'Pending').then();
       isWarningShowStorage.add(false);
       schedulingStorage.add([]).then();
       fileDataStorage.set(null).then();

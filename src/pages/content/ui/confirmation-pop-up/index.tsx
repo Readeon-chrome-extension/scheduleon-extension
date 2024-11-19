@@ -83,20 +83,22 @@ const ConfirmationPopUp = () => {
 
       //cleaning the local storage
       setOpen(false);
-      localStorage.removeItem('scheduling-data');
-      isSchedulingStartStorage.add(false, 0, 'Pending').then();
-      isWarningShowStorage.add(false);
-      schedulingStorage.add([]).then();
-      fileDataStorage.set(null).then();
-      isPublishScreenStorage.setScreen(false);
-      postContentStorage.setPostContent(null);
-
-      setTimeout(() => {
-        window.open('https://www.patreon.com/library', '_self');
-      }, 500);
+      cleanUpStorage();
     }
   }, [isScheduling]);
 
+  const cleanUpStorage = async () => {
+    localStorage.removeItem('scheduling-data');
+    await isSchedulingStartStorage.add(false, 0, 'Pending');
+    await isWarningShowStorage.add(false);
+    await schedulingStorage.add([]).then();
+    await fileDataStorage.set(null).then();
+    await isPublishScreenStorage.setScreen(false);
+    await postContentStorage.setPostContent(null);
+    setTimeout(() => {
+      window.open('https://www.patreon.com/library', '_self');
+    }, 500);
+  };
   React.useEffect(() => {
     if (isScheduling?.start) setOpen(isScheduling?.start);
   }, [isScheduling]);

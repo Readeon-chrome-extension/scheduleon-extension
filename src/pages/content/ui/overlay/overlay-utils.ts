@@ -10,7 +10,6 @@ import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import { toast } from 'sonner';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
-import postContentStorage from '@root/src/shared/storages/post-content-storage';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -147,13 +146,12 @@ const getDialogContainer = () => {
 
   // cleanup the local storage when user start scheduling post
   const containerInner = containerOuter?.querySelector('[data-tag="dialog-container"]');
-  containerInner?.addEventListener('click', () => {
+  containerInner?.addEventListener('click', async () => {
     localStorage.removeItem('scheduling-data');
-    isWarningShowStorage.add(false);
-    schedulingStorage.add([]).then();
-    fileDataStorage.set(null).then();
-    isPublishScreenStorage.setScreen(false);
-    postContentStorage.setPostContent(null);
+    await isWarningShowStorage.add(false);
+    await schedulingStorage.add([]);
+    await fileDataStorage.set(null);
+    await isPublishScreenStorage.setScreen(false);
   });
 };
 export const createPostBtnListener = () => {

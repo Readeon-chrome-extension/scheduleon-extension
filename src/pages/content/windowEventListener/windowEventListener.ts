@@ -4,16 +4,15 @@
 import csrfTokenStorage from '@root/src/shared/storages/csrf-token-storage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 
-import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
-import schedulingCounterStorage from '@root/src/shared/storages/schedulingCounterStorage';
-import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
-import axios from 'axios';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
-import { createPayloadObj, schedulingStart } from './utils';
+import { schedulingStart } from './utils';
 
 refreshOnUpdate('pages/content/windowEventListener/index');
 (() => {
+  let pendingAttachmentUpdates = []; // Temporary queue for updates
+  let pendingImagesUpdates = []; // Temporary queue for updates
+
   window?.addEventListener('message', event => {
     if (event?.data?.type === 'x-csrf-token') {
       csrfTokenStorage.setCsrfToken(event?.data?.csrfToken);
@@ -27,49 +26,66 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
     if (event.data.type === 'media-file-response') {
       const responseData = event.data?.mediaResponse;
-      fileDataUpdateId(responseData);
+      console.log('media file response', { responseData });
+
+      fileDataUpdateId(responseData).then();
     }
     if (event.data.type === 'post-update-response') {
       const data = event.data?.postData;
-      updateImageFiles(data);
+      updateDeleteImageFiles(data);
     }
     if (event.data.type === 'delete-attachments') {
       const id = event.data?.id;
       deleteAttachment(id);
     }
   });
-})();
-const fileDataUpdateId = async (responseData: any) => {
-  const files = await fileDataStorage.get();
-  const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-  const updatedFiles = parsedFiles?.map(file => {
-    if (file?.name === responseData?.data?.attributes?.file_name) {
-      return {
-        ...file,
-        id: responseData?.data?.id,
-      };
+
+  const fileDataUpdateId = async (responseData: any) => {
+    try {
+      // Add the current update to the pending queue
+      pendingAttachmentUpdates.push(responseData);
+
+      // Debounce logic to batch updates
+      clearTimeout(fileDataUpdateId.debounceTimer);
+      fileDataUpdateId.debounceTimer = setTimeout(async () => {
+        const files = await fileDataStorage.get();
+        const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
+
+        // Apply all pending updates
+        const updates = [...pendingAttachmentUpdates];
+        pendingAttachmentUpdates = []; // Clear queue after processing
+
+        const updatedFiles = parsedFiles.map(file => {
+          const update = updates.find(u => u?.data?.attributes?.file_name === file?.name);
+          return update ? { ...file, id: update.data.id } : file;
+        });
+        // Save the final result back to storage
+        await fileDataStorage.setFileData(updatedFiles);
+      }, 400); // Debounce time (adjust as needed)
+    } catch (error) {
+      console.error('Error updating file data:', error);
     }
-    return file;
-  });
+  };
 
-  fileDataStorage.setFileData(updatedFiles);
-};
-const deleteAttachment = async (id: string) => {
-  const files = await fileDataStorage.get();
-  const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-  const updatedFiles = parsedFiles?.filter(file => file?.id !== id);
+  // Define the debounceTimer as a static property
+  fileDataUpdateId.debounceTimer = null as NodeJS.Timeout | null;
+  const deleteAttachment = async (id: string) => {
+    const files = await fileDataStorage.get();
+    const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
+    const updatedFiles = parsedFiles?.filter(file => file?.id !== id);
 
-  fileDataStorage.setFileData(updatedFiles);
-};
-const updateImageFiles = async (data: any) => {
-  const files = await fileDataStorage.get();
-  const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-  const attachmentMedia = parsedFiles?.filter(item => item?.media_type === 'attachment_data');
-  const image_order = data?.data?.attributes?.post_metadata?.image_order;
-  const isValid = image_order?.every(value => value !== null && value !== undefined);
-  if (isValid) {
-    const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
+    await fileDataStorage.setFileData(updatedFiles);
+  };
+  const updateDeleteImageFiles = async (data: any) => {
+    const files = await fileDataStorage.get();
+    const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
+    const attachmentMedia = parsedFiles?.filter(item => item?.media_type === 'attachment_data');
+    const image_order = data?.data?.attributes?.post_metadata?.image_order;
+    const isValid = image_order?.every(value => value !== null && value !== undefined);
+    if (isValid) {
+      const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
 
-    fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
-  }
-};
+      await fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
+    }
+  };
+})();

@@ -15,7 +15,7 @@ const manifest = {
   name: '__MSG_extensionName__',
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
-  permissions: ['storage', 'tabs', 'cookies', 'scripting', 'unlimitedStorage'],
+  permissions: ['storage', 'tabs', 'cookies', 'scripting'],
   host_permissions: ['https://www.patreon.com/*'],
   background: {
     service_worker: 'src/pages/background/index.js',
@@ -71,6 +71,7 @@ const manifest = {
         'icon-128.png',
         'icon-34.png',
         'scroll-dark.png',
+        'scroll-light.png',
         'src/pages/injectedScript/index.js',
       ],
       matches: ['*://*/*'],

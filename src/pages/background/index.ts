@@ -6,12 +6,11 @@ import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
 import { patreonUrl, webURL } from '../popup/components/Header';
 
+import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
+
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
-import fileDataStorage from '@root/src/shared/storages/fileStorage';
-import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import patreonThemeStorage from '@root/src/shared/storages/patreonThemeStorage';
 
 // reloadOnUpdate('pages/background');
 
@@ -53,9 +52,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     if (isPatreonUrl(tab.url)) {
       const patreonSession = await chrome.cookies?.get({ url: 'https://www.patreon.com', name: 'session_id' });
-      const themeValue = await chrome.cookies.get({ url: 'https://www.patreon.com', name: 'color_scheme_selection' });
-
-      await patreonThemeStorage.setTheme(themeValue?.value);
 
       userDataStorage.add({ isLoggedIn: !!patreonSession });
 
@@ -86,7 +82,6 @@ chrome.tabs.onRemoved.addListener(async tabId => {
   await isSchedulingStartStorage.add(false, 0, 'Pending');
   await isWarningShowStorage.add(false);
   await schedulingStorage.add([]);
-  await fileDataStorage.set(null);
   await isPublishScreenStorage.setScreen(false);
 });
 // Listen for when the tab becomes inactive
@@ -136,14 +131,4 @@ const sendMessage = (message: string) => {
 };
 //* this below listener is used to track the theme changes in the cookies
 
-let lastThemeValue = null;
-chrome.cookies.onChanged.addListener(async changeInfo => {
-  if (changeInfo.cookie.name === 'color_scheme_selection') {
-    const newThemeValue: string = changeInfo.cookie.value;
-    if (newThemeValue !== lastThemeValue) {
-      await patreonThemeStorage.setTheme(newThemeValue);
-      lastThemeValue = newThemeValue;
-    }
-  }
-});
 console.log('background loaded');

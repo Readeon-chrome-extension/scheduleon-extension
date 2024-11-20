@@ -24,7 +24,7 @@ import SchedulingFeedback from './schedulingFeedback';
 import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import patreonThemeStorage from '@root/src/shared/storages/patreonThemeStorage';
+import { getAllFiles } from '@root/src/shared/utils/indexDb';
 
 function convertCentsToDollars(cents: number) {
   if (typeof cents !== 'number' || isNaN(cents)) {
@@ -42,8 +42,8 @@ const OverlayView = () => {
   const schedulingCounter = useStorage(schedulingCounterStorage);
   const fileStorage = useStorage(fileDataStorage);
   const accessRuleData = useStorage(accessRulesStorage);
-  const patreonTheme = useStorage(patreonThemeStorage);
-  const parsedFiles = fileStorage?.data ? JSON.parse(fileStorage?.data) : [];
+
+  const [currentTheme, setCurrentTheme] = React.useState('dark');
 
   const [schedulingPopUp, setSchedulingPopUp] = React.useState<boolean>(false);
 
@@ -81,17 +81,22 @@ const OverlayView = () => {
     await isPublishScreenStorage.setScreen(true);
   };
 
-  const handleContinueBtn = () => {
+  const handleContinueBtn = async () => {
     const nextButton: HTMLButtonElement = document.querySelector(config.pages.continueWithAuthoreonBtnInjectSelector);
-
+    const files = await getAllFiles();
+    console.log('files---', { files });
     if (nextButton) {
       nextButton?.click();
       nextButton.removeAttribute('style');
       hidePostAccess();
     }
   };
-  const handleOpen = React.useCallback(() => {
+  const handleOpen = React.useCallback(async () => {
     setIsOpen(true);
+    const themeColorEle = document?.head?.querySelector('meta[name="theme-color"]');
+    console.log('themeColorEle', themeColorEle);
+    const themeColor = themeColorEle?.getAttribute('content');
+    setCurrentTheme(themeColor === '#131313' ? 'dark' : 'light');
   }, []);
 
   const handleMessage = event => {
@@ -299,7 +304,7 @@ const OverlayView = () => {
       return false;
     }
 
-    if (selectedDate <= minFutureDate && parsedFiles?.length) {
+    if (selectedDate <= minFutureDate) {
       setError({ message: 'Please select a time at least 5 minutes in the future', rowId });
       return false;
     }
@@ -373,7 +378,6 @@ const OverlayView = () => {
       toast.error('Please ensure all selected tiers have a date and time');
     }
   };
-  console.log('patreonTheme', { patreonTheme });
 
   return (
     <>
@@ -391,14 +395,14 @@ const OverlayView = () => {
             data-tooltip-id="my-tooltip">
             <X size={25} />
           </div> */}
-          <div className="text-center">
+          <div style={{ textAlign: 'right' }}>
             <img
               src={
-                patreonTheme === 'dark'
+                currentTheme === 'dark'
                   ? chrome.runtime.getURL('scroll-dark.png')
-                  : chrome.runtime.getURL('scroll-dark.png')
+                  : chrome.runtime.getURL('scroll-light.png')
               }
-              style={{ height: '40px', width: '30px' }}
+              style={{ height: '40px', width: 'fit-content', objectFit: 'contain' }}
             />
           </div>
           <h2 className="text-center" style={{ marginTop: '0px' }}>

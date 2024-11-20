@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 
+import { addOrUpdateFile, clearFileData, FileData } from '@root/src/shared/utils/indexDb';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -70,46 +72,55 @@ export const combineDateTime = (date: string, time: string) => {
 
   return utcFormatted;
 };
-function arrayBufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-}
-async function convertFilesToBuffers(fileList, media_type: string) {
-  const fileBuffers = [];
-  for (const file of fileList) {
-    const buffer = await file.arrayBuffer();
-    fileBuffers.push({
-      name: file.name,
-      type: file.type,
-      media_type: media_type,
-      data: arrayBufferToBase64(buffer),
-    });
-  }
-  return fileBuffers;
-}
-const getExistingFiles = async () => {
-  const existingFile = await fileDataStorage.get();
-  const parsedFiles = existingFile?.data ? JSON.parse(existingFile?.data) : [];
-  return parsedFiles;
-};
-export const imageFileHandler = async (files: any) => {
-  const fileBuffers = await convertFilesToBuffers(files, 'image_data');
+
+// Function to process and compress files
+
+export const imageFileHandler = async (files: FileList) => {
+  const fileData = Array.from(files);
   const isWarningShow = await isWarningShowStorage.get();
-  const existingFile = await getExistingFiles();
-  if (fileBuffers?.length) {
+  if (fileData?.length) {
     if (!isWarningShow) {
       toast.warning('Scheduleon Warning: Attaching multiple files or large files may lead to performance issues', {
         closeButton: true,
       });
       isWarningShowStorage.add(true);
     }
+    // Store the file buffers in IndexedDB
+    await Promise.all(
+      fileData.map(async file => {
+        const arrayBuffer = await convertFileToArrayBuffer(file);
 
-    await fileDataStorage.setFileData([...existingFile, ...fileBuffers]);
+        const fileData: FileData = {
+          id: file.name, // Use file name as ID or generate unique ID
+          name: file.name,
+          type: file.type,
+          data: arrayBuffer,
+          idMediaType: `${file.name}_image_data`,
+          media_type: 'image_data', // or 'image_data' depending on the file type
+        };
+
+        await addOrUpdateFile(fileData); // Save file to IndexedDB
+        console.log(`File ${file.name} added to IndexedDB`);
+      }),
+    );
+    fileDataStorage.toggleFileAdd();
   }
+};
+// Convert file to ArrayBuffer
+const convertFileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result as ArrayBuffer);
+    };
+
+    reader.onerror = () => {
+      reject('Error reading file');
+    };
+
+    reader.readAsArrayBuffer(file); // Read the file as ArrayBuffer
+  });
 };
 export const attachmentsInput = () => {
   const fileInput: HTMLInputElement = document.querySelector(config.pages.attachmentsInput);
@@ -119,18 +130,37 @@ export const attachmentsInput = () => {
 
   fileInput?.addEventListener('change', async () => {
     const files = fileInput?.files;
-    const isWarningShow = await isWarningShowStorage.get();
-    const fileBuffers = await convertFilesToBuffers(files, 'attachment_data');
 
-    if (fileBuffers?.length) {
-      const existingFile = await getExistingFiles();
+    const filesData: File[] = Array.from(files || []);
+    const isWarningShow = await isWarningShowStorage.get();
+
+    if (filesData?.length) {
       if (!isWarningShow) {
         toast.warning('Scheduleon Warning: Attaching multiple files or large files may lead to performance issues', {
           closeButton: true,
         });
         isWarningShowStorage.add(true);
       }
-      await fileDataStorage.setFileData([...existingFile, ...fileBuffers]);
+
+      // Store the file buffers in IndexedDB
+      await Promise.all(
+        filesData.map(async file => {
+          const arrayBuffer = await convertFileToArrayBuffer(file);
+
+          const fileData: FileData = {
+            id: file.name, // Use file name as ID or generate unique ID
+            name: file.name,
+            type: file.type,
+            data: arrayBuffer,
+            idMediaType: `${file.name}_attachment_data`,
+            media_type: 'attachment_data', // or 'image_data' depending on the file type
+          };
+
+          await addOrUpdateFile(fileData); // Save file to IndexedDB
+          console.log(`File ${file.name} added to IndexedDB`);
+        }),
+      );
+      fileDataStorage.toggleFileAdd();
     }
   });
 
@@ -150,10 +180,11 @@ const getDialogContainer = () => {
     localStorage.removeItem('scheduling-data');
     await isWarningShowStorage.add(false);
     await schedulingStorage.add([]);
+    await clearFileData();
     await fileDataStorage.set(null);
     await isPublishScreenStorage.setScreen(false);
   });
 };
 export const createPostBtnListener = () => {
-  setTimeout(getDialogContainer, 800);
+  setTimeout(getDialogContainer, 900);
 };

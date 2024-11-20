@@ -2,16 +2,15 @@
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
 import csrfTokenStorage from '@root/src/shared/storages/csrf-token-storage';
-import fileDataStorage from '@root/src/shared/storages/fileStorage';
 
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 import { schedulingStart } from './utils';
+import { getAllFiles, handleFileRemoval, updateFileId } from '@root/src/shared/utils/indexDb';
 
 refreshOnUpdate('pages/content/windowEventListener/index');
 (() => {
   let pendingAttachmentUpdates = []; // Temporary queue for updates
-  let pendingImagesUpdates = []; // Temporary queue for updates
 
   window?.addEventListener('message', event => {
     if (event?.data?.type === 'x-csrf-token') {
@@ -26,8 +25,7 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
     if (event.data.type === 'media-file-response') {
       const responseData = event.data?.mediaResponse;
-      console.log('media file response', { responseData });
-
+      console.log('responseData', { responseData });
       fileDataUpdateId(responseData).then();
     }
     if (event.data.type === 'post-update-response') {
@@ -36,6 +34,7 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
     if (event.data.type === 'delete-attachments') {
       const id = event.data?.id;
+
       deleteAttachment(id);
     }
   });
@@ -48,19 +47,13 @@ refreshOnUpdate('pages/content/windowEventListener/index');
       // Debounce logic to batch updates
       clearTimeout(fileDataUpdateId.debounceTimer);
       fileDataUpdateId.debounceTimer = setTimeout(async () => {
-        const files = await fileDataStorage.get();
-        const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-
         // Apply all pending updates
         const updates = [...pendingAttachmentUpdates];
         pendingAttachmentUpdates = []; // Clear queue after processing
 
-        const updatedFiles = parsedFiles.map(file => {
-          const update = updates.find(u => u?.data?.attributes?.file_name === file?.name);
-          return update ? { ...file, id: update.data.id } : file;
+        updates.forEach(async res => {
+          await updateFileId(res?.data?.attributes?.file_name, res?.data.id);
         });
-        // Save the final result back to storage
-        await fileDataStorage.setFileData(updatedFiles);
       }, 400); // Debounce time (adjust as needed)
     } catch (error) {
       console.error('Error updating file data:', error);
@@ -70,22 +63,17 @@ refreshOnUpdate('pages/content/windowEventListener/index');
   // Define the debounceTimer as a static property
   fileDataUpdateId.debounceTimer = null as NodeJS.Timeout | null;
   const deleteAttachment = async (id: string) => {
-    const files = await fileDataStorage.get();
-    const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-    const updatedFiles = parsedFiles?.filter(file => file?.id !== id);
-
-    await fileDataStorage.setFileData(updatedFiles);
+    if (id) {
+      await handleFileRemoval(id);
+    }
   };
   const updateDeleteImageFiles = async (data: any) => {
-    const files = await fileDataStorage.get();
-    const parsedFiles = files?.data ? JSON.parse(files?.data) : [];
-    const attachmentMedia = parsedFiles?.filter(item => item?.media_type === 'attachment_data');
     const image_order = data?.data?.attributes?.post_metadata?.image_order;
-    const isValid = image_order?.every(value => value !== null && value !== undefined);
-    if (isValid) {
-      const filteredImages = parsedFiles?.filter(file => image_order?.includes(file?.id));
+    const files = await getAllFiles();
+    const removeIds = files?.filter(file => file.media_type === 'image_data' && !image_order.includes(file?.id));
 
-      await fileDataStorage.setFileData([...filteredImages, ...attachmentMedia]);
-    }
+    removeIds?.forEach(async file => {
+      await handleFileRemoval(file?.id);
+    });
   };
 })();

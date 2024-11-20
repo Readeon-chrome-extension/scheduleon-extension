@@ -2,25 +2,20 @@
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
 import { BaseStorage, createStorage, StorageType } from '@src/shared/storages/base';
-interface FilesDataTypes {
-  data: string;
-}
 
-type fileDataStorageType = BaseStorage<FilesDataTypes> & {
-  setFileData: (data: any) => Promise<void>;
+type fileDataStorageType = BaseStorage<boolean> & {
+  toggleFileAdd: () => Promise<void>;
 };
 
-const storage = createStorage<FilesDataTypes>('file-data-payload-storage-key', null, {
+const storage = createStorage<boolean>('file-data-toggle-storage-key', null, {
   storageType: StorageType.Local,
   liveUpdate: true,
 });
 
 const fileDataStorage: fileDataStorageType = {
   ...storage,
-  setFileData: async (data: any) => {
-    await storage.set(prev => {
-      return { data: JSON.stringify([...data]) };
-    });
+  toggleFileAdd: async () => {
+    await storage.set(prev => !prev);
   },
 };
 

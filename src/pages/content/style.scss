@@ -231,3 +231,17 @@
 .w-30 {
   width: 30%;
 }
+
+.tiers-not-found {
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.tiers-not-found p {
+  font-size: 16px;
+  font-weight: 500;
+}

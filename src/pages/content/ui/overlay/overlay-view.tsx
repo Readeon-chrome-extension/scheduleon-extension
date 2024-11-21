@@ -25,6 +25,7 @@ import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import { getAllFiles } from '@root/src/shared/utils/indexDb';
+import { File } from 'lucide-react';
 
 function convertCentsToDollars(cents: number) {
   if (typeof cents !== 'number' || isNaN(cents)) {
@@ -464,6 +465,12 @@ const OverlayView = () => {
                 {error?.rowId === rules.access_rule_id && <p className="error-text">{error.message}</p>}
               </div>
             ))}
+            {!data?.length && (
+              <div className="flex tiers-not-found">
+                <File size={25} />
+                <p>Tiers not loaded. Please try refreshing or reloading the extension.</p>
+              </div>
+            )}
           </div>
           <div className="footer-button-container">
             <button className="common_button" style={{ marginBottom: '1rem' }} onClick={handleClose}>

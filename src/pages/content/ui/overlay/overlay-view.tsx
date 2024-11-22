@@ -93,6 +93,7 @@ const OverlayView = () => {
     }
   };
   const handleOpen = React.useCallback(async () => {
+    console.log('Opening scheduling options modal');
     setIsOpen(true);
     const themeColorEle = document?.head?.querySelector('meta[name="theme-color"]');
     console.log('themeColorEle', themeColorEle);
@@ -101,8 +102,12 @@ const OverlayView = () => {
   }, []);
 
   const handleMessage = event => {
-    if (event?.data.type === 'access-rules') {
+    console.log('Received message:', event);
+    if (event?.data?.type === 'access-rules') {
+      console.log('Access rules received:', event.data.accessRules);
       extractAccessRulesWithRewards(event.data.accessRules);
+    } else {
+      console.log('No access rules in this message.');
     }
   };
 
@@ -123,6 +128,7 @@ const OverlayView = () => {
   };
 
   const extractAccessRulesWithRewards = async (accessRules: any[]) => {
+    console.log('Extracting access rules with rewards:', accessRules);
     // First, create a map of reward information by reward_id
     const rewardMap = {};
 
@@ -138,6 +144,7 @@ const OverlayView = () => {
         };
       }
     });
+    console.log('Processed rewardMap:', rewardMap);
     // Now, extract access rules and associate rewards
     const result = [];
     accessRules.forEach(item => {
@@ -170,7 +177,7 @@ const OverlayView = () => {
         result.push(accessRule);
       }
     });
-
+    console.log('Processed access rules before sorting:', result);
     const sortedData = result.sort((a, b) => {
       // Define sort order values
       const getTypeOrder = item => {
@@ -195,8 +202,9 @@ const OverlayView = () => {
 
       return 0; // No sorting needed if they are of the same type and not paid tiers
     });
-
+    console.log('Sorted access rules:', sortedData);
     await accessRulesStorage.add(sortedData);
+    console.log('Access rules stored in storage.');
   };
   const OnChromeMessage = React.useCallback(action => {
     if (action.message === 'scheduling-option-modal') {
@@ -204,6 +212,7 @@ const OverlayView = () => {
     }
   }, []);
   React.useEffect(() => {
+    console.log('Adding message event listener');
     window.addEventListener('message', handleMessage);
     let continueWithAuthoreonBtn;
     const observer = new MutationObserver(async mutationsList => {
@@ -229,6 +238,7 @@ const OverlayView = () => {
     chrome.runtime.onMessage.addListener(OnChromeMessage);
 
     return () => {
+      console.log('Removing message event listener');
       //cleanup all the listener
       observer.disconnect();
       chrome.runtime.onMessage.removeListener(OnChromeMessage);
@@ -236,12 +246,18 @@ const OverlayView = () => {
       continueWithAuthoreonBtn?.removeEventListener('click', handleContinueBtn);
       backBtn.removeEventListener('click', handleBackBtn);
       localStorage.removeItem('scheduling-data');
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 
   React.useEffect(() => {
+    console.log('Setting data with accessRuleData:', accessRuleData);
     setData(accessRuleData ?? []);
   }, [accessRuleData]);
+
+  React.useEffect(() => {
+    console.log('Data state updated:', data);
+  }, [data]);
 
   const callBack = React.useCallback(async (event: any) => {
     const files = event?.target?.files;
@@ -295,6 +311,7 @@ const OverlayView = () => {
   };
   // Function to handle the combined DateTime validation
   const validateDate = (date: string, time: string, rowId: string) => {
+    console.log(`Validating date for row ${rowId}:`, { date, time });
     const selectedDate = new Date(`${date}T${time}`);
     const currentDate = new Date();
 
@@ -380,6 +397,8 @@ const OverlayView = () => {
     }
   };
 
+  console.log('Data to be rendered:', data);
+
   return (
     <>
       <Toaster richColors position="top-right" />
@@ -390,12 +409,12 @@ const OverlayView = () => {
           onAfterOpen={() => (document.body.style.overflow = 'hidden')}
           onAfterClose={() => (document.body.style.overflow = 'unset')}>
           {/* <div
-            className={`overlay__close `}
-            onClick={handleClose}
-            data-tooltip-content="Close Post"
-            data-tooltip-id="my-tooltip">
-            <X size={25} />
-          </div> */}
+             className={`overlay__close `}
+             onClick={handleClose}
+             data-tooltip-content="Close Post"
+             data-tooltip-id="my-tooltip">
+             <X size={25} />
+           </div> */}
           <div style={{ textAlign: 'right' }}>
             <img
               src={
@@ -410,61 +429,64 @@ const OverlayView = () => {
             Scheduling Options
           </h2>
           <div className="access-rules-list-container ">
-            {data?.map(rules => (
-              <div key={rules.access_rule_id ?? 'key-1' + rules.title?.toLocaleLowerCase()}>
-                <span className="access-rules-label-container">
-                  <input
-                    type="checkbox"
-                    className="access-rules-checkbox"
-                    checked={!!selected.find(item => item.access_rule_id === rules.access_rule_id)}
-                    onChange={() => handleCheckboxChange(rules.access_rule_id)}
-                  />
-                  <span>
-                    <label className="access-rules-label">
-                      {rules.title === 'patrons'
-                        ? 'Paid members only'
-                        : rules.title === 'Free'
-                          ? 'Free members only'
-                          : rules.title}
-                    </label>
-                    {rules.description && <p className="access-rules-label-description">{rules?.description}</p>}
+            {data?.map((rules, index) => {
+              console.log(`Rendering rule ${index}:`, rules);
+              return (
+                <div key={rules.access_rule_id ?? 'key-1' + rules.title?.toLocaleLowerCase()}>
+                  <span className="access-rules-label-container">
+                    <input
+                      type="checkbox"
+                      className="access-rules-checkbox"
+                      checked={!!selected.find(item => item.access_rule_id === rules.access_rule_id)}
+                      onChange={() => handleCheckboxChange(rules.access_rule_id)}
+                    />
+                    <span>
+                      <label className="access-rules-label">
+                        {rules.title === 'patrons'
+                          ? 'Paid members only'
+                          : rules.title === 'Free'
+                            ? 'Free members only'
+                            : rules.title}
+                      </label>
+                      {rules.description && <p className="access-rules-label-description">{rules?.description}</p>}
+                    </span>
                   </span>
-                </span>
-                <div className="date-time-picker-container">
-                  <div className="date-picker-outer-wrapper">
-                    <div className="date-picker-wrapper">
-                      <input
-                        value={selected.find(item => item.access_rule_id === rules.access_rule_id)?.date || ''}
-                        onChange={e => handleDateChange(rules.access_rule_id, e.target.value)}
-                        aria-invalid="false"
-                        aria-label="Schedule Date"
-                        aria-multiline="false"
-                        id="date"
-                        type="date"
-                        placeholder="YYYY-MM-DD"
-                        className="date-picker"
-                      />
+                  <div className="date-time-picker-container">
+                    <div className="date-picker-outer-wrapper">
+                      <div className="date-picker-wrapper">
+                        <input
+                          value={selected.find(item => item.access_rule_id === rules.access_rule_id)?.date || ''}
+                          onChange={e => handleDateChange(rules.access_rule_id, e.target.value)}
+                          aria-invalid="false"
+                          aria-label="Schedule Date"
+                          aria-multiline="false"
+                          id="date"
+                          type="date"
+                          placeholder="YYYY-MM-DD"
+                          className="date-picker"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="date-picker-outer-wrapper">
-                    <div className="date-picker-wrapper">
-                      <input
-                        aria-invalid="false"
-                        aria-label="Schedule Time"
-                        aria-multiline="false"
-                        type="time"
-                        className="date-picker"
-                        placeholder="12:00"
-                        value={selected.find(item => item.access_rule_id === rules.access_rule_id)?.time || ''}
-                        onChange={e => handleTimeChange(rules.access_rule_id, e.target.value)}
-                      />
+                    <div className="date-picker-outer-wrapper">
+                      <div className="date-picker-wrapper">
+                        <input
+                          aria-invalid="false"
+                          aria-label="Schedule Time"
+                          aria-multiline="false"
+                          type="time"
+                          className="date-picker"
+                          placeholder="12:00"
+                          value={selected.find(item => item.access_rule_id === rules.access_rule_id)?.time || ''}
+                          onChange={e => handleTimeChange(rules.access_rule_id, e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
+                  {error?.rowId === rules.access_rule_id && <p className="error-text">{error.message}</p>}
                 </div>
-                {error?.rowId === rules.access_rule_id && <p className="error-text">{error.message}</p>}
-              </div>
-            ))}
+              );
+            })}
             {!data?.length && (
               <div className="flex tiers-not-found">
                 <File size={25} />

@@ -15,8 +15,19 @@ const manifest = {
   name: '__MSG_extensionName__',
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
-  permissions: ['storage', 'tabs', 'cookies', 'scripting'],
-  host_permissions: ['https://www.patreon.com/*'],
+  permissions: [
+    'storage',
+    'tabs',
+    'cookies',
+    'scripting',
+    'activeTab',
+    'webRequest', // Added for observing network requests
+    'webRequestBlocking', // Added for modifying or blocking network requests
+  ],
+  host_permissions: [
+    'https://www.patreon.com/api/posts*', // Specific endpoint for interception
+    'https://www.patreon.com/api/*', // General access to Patreon API
+  ],
   background: {
     service_worker: 'src/pages/background/index.js',
     type: 'module',
@@ -44,13 +55,14 @@ const manifest = {
       matches: ['https://www.patreon.com/*'],
       js: ['src/pages/contentInjector/index.js'],
       run_at: 'document_start',
+      all_frames: true,
     },
     {
       matches: ['https://www.patreon.com/*'],
       js: ['src/pages/contentWindowEventListener/index.js'],
       run_at: 'document_start',
+      all_frames: true,
     },
-
     {
       matches: ['https://www.patreon.com/*'],
       js: ['src/pages/contentUI/index.js'],

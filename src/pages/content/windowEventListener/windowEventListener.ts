@@ -1,16 +1,25 @@
-/* Copyright (C) [2024] [Scheduleon]
- This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
- */
-import csrfTokenStorage from '@root/src/shared/storages/csrf-token-storage';
+/* 
+  Copyright (C) [2024] [Scheduleon]
+  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
+*/
 
+import csrfTokenStorage from '@root/src/shared/storages/csrf-token-storage';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 import { schedulingStart } from './utils';
 import { getAllFiles, handleFileRemoval, updateFileId } from '@root/src/shared/utils/indexDb';
 
 refreshOnUpdate('pages/content/windowEventListener/index');
+
 (() => {
   let pendingAttachmentUpdates = []; // Temporary queue for updates
+
+  chrome.runtime.onMessage.addListener(message => {
+    if (message.type === 'fields-reward-request') {
+      // Handle GET requests with 'fields[reward]'
+      console.log("Received 'fields-reward-request' message:", message.url);
+    }
+  });
 
   window?.addEventListener('message', event => {
     if (event?.data?.type === 'x-csrf-token') {

@@ -132,3 +132,37 @@ const sendMessage = (message: string) => {
 //* this below listener is used to track the theme changes in the cookies
 
 console.log('background loaded');
+
+/**
+ * ============================================
+ * WebRequest Listener for 'fields[reward]'
+ * ============================================
+ */
+
+// Function to parse query parameters from a URL
+function getQueryParams(url) {
+  const urlObj = new URL(url);
+  return new URLSearchParams(urlObj.search);
+}
+
+// Listener for GET requests with 'fields[reward]'
+chrome.webRequest.onBeforeRequest.addListener(
+  function (details) {
+    const queryParams = getQueryParams(details.url);
+
+    if (queryParams.has('fields[reward]')) {
+      console.log('[Intercepted GET] Fields[Reward] Request:', details.url);
+
+      // Send a message to the content script with the request details
+      chrome.tabs.sendMessage(details.tabId, {
+        type: 'fields-reward-request',
+        url: details.url,
+      });
+    }
+  },
+  {
+    urls: ['*://www.patreon.com/api/posts*'], // Target specific endpoints
+    types: ['xmlhttprequest'], // Types of requests to intercept
+  },
+  [], // No extra options needed for GET requests
+);

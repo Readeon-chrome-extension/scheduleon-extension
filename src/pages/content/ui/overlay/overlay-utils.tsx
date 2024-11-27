@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { feedbackScheduleonError, submitFeedback } from '@root/src/shared/utils/common';
 import { addOrUpdateFile, clearFileData, FileData } from '@root/src/shared/utils/indexDb';
 import { TriangleAlert, X } from 'lucide-react';
+import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -180,6 +181,7 @@ const getDialogContainer = () => {
   containerInner?.addEventListener('click', async () => {
     localStorage.removeItem('scheduling-data');
     await isWarningShowStorage.add(false);
+    await isCreatePostReloadStorage.add(false);
     await schedulingStorage.add([]);
     await clearFileData();
     await fileDataStorage.set(null);

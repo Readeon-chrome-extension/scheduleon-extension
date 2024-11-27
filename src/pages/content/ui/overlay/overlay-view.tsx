@@ -40,9 +40,8 @@ const OverlayView = () => {
   const accessRuleData = useStorage(accessRulesStorage);
 
   const [currentTheme, setCurrentTheme] = React.useState('dark');
-
   const [schedulingPopUp, setSchedulingPopUp] = React.useState<boolean>(false);
-
+  const [createPostBtnEle, setCreatePostBtnEle] = React.useState<Element>();
   const handleBackBtn = React.useCallback(backButtonHandler, []);
 
   const hidePostAccess = async (startTime: number = Date.now()) => {
@@ -200,15 +199,34 @@ const OverlayView = () => {
   const createPostBtnHandler = React.useCallback(createPostBtnListener, []);
   // getting the create post button
   React.useEffect(() => {
-    const createPostBtnEle = document?.querySelector(
-      'nav[aria-label="Creator navigation"] button[aria-label="Create post"]',
-    );
+    const getSidebar = () => {
+      const size = window.innerWidth;
+      console.log('size', size);
+
+      const sideBar = document?.querySelector(config.pages.createPostBtnSelector);
+      console.log('sideBar', sideBar);
+
+      const createPost = sideBar?.querySelector(
+        `div.${size >= 978 ? 'cnetpD' : 'gnXrWQ'} button[aria-label="Create post"]`,
+      );
+      return createPost;
+    };
+    setCreatePostBtnEle(getSidebar());
+
+    window?.addEventListener('resize', () => {
+      setCreatePostBtnEle(getSidebar());
+    });
+  }, []);
+  React.useEffect(() => {
+    console.log('createPostBtnEle---', createPostBtnEle);
+
     if (createPostBtnEle) {
+      console.log('createPostBtnEle', createPostBtnEle);
+
       createPostBtnEle?.removeEventListener('click', createPostBtnHandler);
       createPostBtnEle?.addEventListener('click', createPostBtnHandler);
     }
-  }, []);
-
+  }, [createPostBtnEle]);
   // Function to handle checkbox toggle
   const handleCheckboxChange = (access_rule_id: string) => {
     setError(null);

@@ -5,7 +5,6 @@ import { Loader } from '@root/src/shared/components/loader/Loader';
 import { Modal } from '@root/src/shared/components/modal/Modal';
 import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
-import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
@@ -53,13 +52,11 @@ const ConfirmationPopUp = () => {
     await isWarningShowStorage.add(false);
     await submitFeedback(feedbackSuccess);
     await schedulingStorage.add([]).then();
-    await isCreatePostReloadStorage.add(false);
+
     await fileDataStorage.set(null).then();
     await isPublishScreenStorage.setScreen(false);
     await postContentStorage.setPostContent(null);
-    setTimeout(() => {
-      window.open('https://www.patreon.com/library', '_self');
-    }, 500);
+    window.open('https://www.patreon.com/library', '_self');
   };
   React.useEffect(() => {
     if (isScheduling?.start) setOpen(isScheduling?.start);

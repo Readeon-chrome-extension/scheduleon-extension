@@ -192,7 +192,8 @@ export const createPostBtnListener = () => {
 
 export const scheduleBtnClick = async () => {
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-  await delay(2000);
+  // waiting for 2 second if the scheduleon confirmation pop up showing or not
+  await delay(3000);
   const popUpEle = document.querySelector('.scheduleon-confirmation-pop-up');
   const schedulingData = await schedulingStorage.get();
 

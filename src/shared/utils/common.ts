@@ -6,6 +6,8 @@ import axios from 'axios';
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
 export const feedbackScheduleonError = `Patreon post and patch endpoints are not being intercepted when scheduling posts`;
+export const feedbackSuccess = `Scheduleon successfully scheduled posts`;
+export const schedulingOptionsFeedbacks = `Having trouble getting tier details for scheduling options pop-up`;
 const detectBrowser = () => {
   const userAgent = navigator?.userAgent;
 

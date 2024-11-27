@@ -18,8 +18,6 @@ const ConfirmationPopUp = () => {
 
   const isScheduling = useStorage(isSchedulingStartStorage);
 
-  const [showTimer, setShowTimer] = React.useState<boolean>(false);
-
   const beforeUnloadHandler = React.useCallback(event => {
     // Recommended
     event.preventDefault();
@@ -28,53 +26,14 @@ const ConfirmationPopUp = () => {
     event.returnValue = true;
   }, []);
   React.useEffect(() => {
-    let timer;
-
     if (isOpen) {
-      setShowTimer(true);
       window.addEventListener('beforeunload', beforeUnloadHandler);
-      // Calculate initial remaining time
-      // const calculateRemainingTime = () => {
-      //   const currentTime = Date.now();
-      //   const remainingTime = Math.max(0, isScheduling?.endTime - currentTime);
-      //   setCountdown(remainingTime);
-      //   return remainingTime;
-      // };
-
-      // calculateRemainingTime();
-
-      // // Update the countdown every second
-      // timer = setInterval(() => {
-      //   const remainingTime = calculateRemainingTime();
-
-      //   // Stop scheduling when countdown reaches 0
-      //   if (remainingTime <= 0) {
-      //     isSchedulingStartStorage.add(false, 0).then();
-      //     window.removeEventListener('beforeunload', beforeUnloadHandler);
-
-      //     //cleaning the local storage
-      //     localStorage.removeItem('scheduling-data');
-      //     schedulingStorage.add([]).then();
-      //     fileDataStorage.set(null).then();
-      //     isPublishScreenStorage.setScreen(false);
-      //     postContentStorage.setPostContent(null);
-
-      //     setShowTimer(false);
-      //     clearInterval(timer);
-
-      //     setTimeout(() => {
-      //       window.open('https://www.patreon.com/library', '_self');
-      //     }, 1000);
-      //   }
-      // }, 1000);
     }
 
     // Cleanup interval on component unmount or when `isScheduling` changes
     return () => {
       isSchedulingStartStorage.add(false, 0, 'Pending').then();
-      setShowTimer(false);
       window.removeEventListener('beforeunload', beforeUnloadHandler);
-      clearInterval(timer);
     };
   }, [isOpen]);
   React.useEffect(() => {
@@ -107,6 +66,7 @@ const ConfirmationPopUp = () => {
     <>
       {isOpen && (
         <Modal
+          portalClassName="scheduleon-confirmation-pop-up"
           isOpen={isOpen}
           footer={null}
           body={
@@ -125,23 +85,8 @@ const ConfirmationPopUp = () => {
                   Please wait while Scheduleon takes care of your scheduling. You will be redirected to your Library
                   page once posts are scheduled.
                 </p>
-                {showTimer && (
-                  <>
-                    <Loader />
-                  </>
-                )}
-                {/* <button
-                  className="common_button"
-                  style={{
-                    width: '200px',
-                    pointerEvents: isScheduling?.start ? 'none' : 'all',
-                    opacity: isScheduling?.start ? '0.7' : 'unset',
-                  }}
-                  disabled={isScheduling?.start}>
-                  <a href="https://www.patreon.com/library" style={{ color: '#000', width: '100%' }}>
-                    OK
-                  </a>
-                </button> */}
+
+                <Loader />
               </div>
             </>
           }

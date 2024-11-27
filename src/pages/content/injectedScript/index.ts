@@ -59,8 +59,6 @@
           console.error('Error parsing JSON:', e);
         }
       }
-      console.log('intercept api details init', { init });
-      console.log('intercept api details inout', { input });
       if (
         init &&
         init.body &&
@@ -83,7 +81,6 @@
           const filterData = payload.included?.filter(item => item.type !== 'access-rule');
           filterData.push({ ...accessRules, attributes: {} });
           payload.included = filterData;
-          console.log('scheduling start----');
 
           init.body = JSON.stringify(payload);
           window.parent.postMessage({

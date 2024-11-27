@@ -87,6 +87,9 @@ const reloadTab = async (currentUrl: string) => {
       chrome.tabs.reload();
     }, 600);
   }
+  if (url?.pathname.includes('library') && cretePostReload) {
+    await isCreatePostReloadStorage.add(false);
+  }
 };
 // Listen for tab removal to clear stored data
 chrome.tabs.onRemoved.addListener(async tabId => {

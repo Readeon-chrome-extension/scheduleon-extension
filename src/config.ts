@@ -19,6 +19,7 @@ export interface Config {
     addMoreImages: string;
     sideBarNavElementSelector: string;
     sideBarSelector: string;
+    createPostBtnSelector: string;
   };
 }
 export default {
@@ -38,5 +39,6 @@ export default {
     addMoreImages: '[aria-label="Add more images"]',
     sideBarNavElementSelector: '[data-tag="navbar"] > nav > div',
     sideBarSelector: 'main-app-navigation',
+    createPostBtnSelector: 'nav[aria-label="Creator navigation"] > div:nth-child(2) div.cDPmHL',
   },
 } as Config;

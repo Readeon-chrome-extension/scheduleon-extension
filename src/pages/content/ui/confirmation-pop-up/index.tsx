@@ -5,11 +5,13 @@ import { Loader } from '@root/src/shared/components/loader/Loader';
 import { Modal } from '@root/src/shared/components/modal/Modal';
 import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
+import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
+import { feedbackSuccess, submitFeedback } from '@root/src/shared/utils/common';
 import { Clock } from 'lucide-react';
 import React from 'react';
 
@@ -26,58 +28,20 @@ const ConfirmationPopUp = () => {
     event.returnValue = true;
   }, []);
   React.useEffect(() => {
-    let timer;
-
     if (isOpen) {
       window.addEventListener('beforeunload', beforeUnloadHandler);
-      // Calculate initial remaining time
-      // const calculateRemainingTime = () => {
-      //   const currentTime = Date.now();
-      //   const remainingTime = Math.max(0, isScheduling?.endTime - currentTime);
-      //   setCountdown(remainingTime);
-      //   return remainingTime;
-      // };
-
-      // calculateRemainingTime();
-
-      // // Update the countdown every second
-      // timer = setInterval(() => {
-      //   const remainingTime = calculateRemainingTime();
-
-      //   // Stop scheduling when countdown reaches 0
-      //   if (remainingTime <= 0) {
-      //     isSchedulingStartStorage.add(false, 0).then();
-      //     window.removeEventListener('beforeunload', beforeUnloadHandler);
-
-      //     //cleaning the local storage
-      //     localStorage.removeItem('scheduling-data');
-      //     schedulingStorage.add([]).then();
-      //     fileDataStorage.set(null).then();
-      //     isPublishScreenStorage.setScreen(false);
-      //     postContentStorage.setPostContent(null);
-
-      //     setShowTimer(false);
-      //     clearInterval(timer);
-
-      //     setTimeout(() => {
-      //       window.open('https://www.patreon.com/library', '_self');
-      //     }, 1000);
-      //   }
-      // }, 1000);
     }
 
     // Cleanup interval on component unmount or when `isScheduling` changes
     return () => {
       isSchedulingStartStorage.add(false, 0, 'Pending').then();
       window.removeEventListener('beforeunload', beforeUnloadHandler);
-      clearInterval(timer);
     };
   }, [isOpen]);
 
   React.useEffect(() => {
     if (!isScheduling?.start && isScheduling?.schedulingState === 'Complete') {
       window.removeEventListener('beforeunload', beforeUnloadHandler);
-
       //cleaning the local storage
       isWarningShowStorage.add(false);
       setOpen(false);
@@ -89,7 +53,9 @@ const ConfirmationPopUp = () => {
     localStorage.removeItem('scheduling-data');
     await isSchedulingStartStorage.add(false, 0, 'Pending');
     await isWarningShowStorage.add(false);
+    await submitFeedback(feedbackSuccess);
     await schedulingStorage.add([]).then();
+    await isCreatePostReloadStorage.add(false);
     await fileDataStorage.set(null).then();
     await isPublishScreenStorage.setScreen(false);
     await postContentStorage.setPostContent(null);
@@ -105,6 +71,7 @@ const ConfirmationPopUp = () => {
     <>
       {isOpen && (
         <Modal
+          portalClassName="scheduleon-confirmation-pop-up"
           isOpen={isOpen}
           footer={null}
           body={
@@ -125,19 +92,6 @@ const ConfirmationPopUp = () => {
                 </p>
 
                 <Loader />
-
-                {/* <button
-                  className="common_button"
-                  style={{
-                    width: '200px',
-                    pointerEvents: isScheduling?.start ? 'none' : 'all',
-                    opacity: isScheduling?.start ? '0.7' : 'unset',
-                  }}
-                  disabled={isScheduling?.start}>
-                  <a href="https://www.patreon.com/library" style={{ color: '#000', width: '100%' }}>
-                    OK
-                  </a>
-                </button> */}
               </div>
             </>
           }

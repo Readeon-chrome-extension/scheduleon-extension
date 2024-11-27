@@ -15,7 +15,7 @@ const manifest = {
   name: '__MSG_extensionName__',
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
-  permissions: ['storage', 'tabs', 'cookies', 'scripting'],
+  permissions: ['storage', 'tabs', 'cookies', 'scripting', 'webRequest'],
   host_permissions: ['https://www.patreon.com/*'],
   background: {
     service_worker: 'src/pages/background/index.js',
@@ -37,7 +37,7 @@ const manifest = {
   },
   content_security_policy: {
     extension_pages:
-      "default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'  https://www.readeon.com/; object-src 'self';",
+      "default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'  https://www.readeon.com/ https://www.patreon.com/; object-src 'self';",
   },
   content_scripts: [
     {

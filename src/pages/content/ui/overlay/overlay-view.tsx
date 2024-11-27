@@ -13,6 +13,7 @@ import {
   customStyles,
   imageFileHandler,
   nextButtonHandler,
+  scheduleBtnClick,
 } from './overlay-utils';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import schedulingCounterStorage from '@root/src/shared/storages/schedulingCounterStorage';
@@ -24,15 +25,9 @@ import SchedulingFeedback from './schedulingFeedback';
 import { AccessRulesData, ErrorTypes, selectedDataType } from './overlay.d';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import { getAllFiles } from '@root/src/shared/utils/indexDb';
 import { File } from 'lucide-react';
-
-function convertCentsToDollars(cents: number) {
-  if (typeof cents !== 'number' || isNaN(cents)) {
-    throw new Error('Input must be a valid number');
-  }
-  return (cents / 100).toFixed(2); // Convert and return in 2 decimal places
-}
+import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
+import { schedulingOptionsFeedbacks, submitFeedback } from '@root/src/shared/utils/common';
 
 const OverlayView = () => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
@@ -56,7 +51,6 @@ const OverlayView = () => {
       ?.parentElement?.parentElement?.querySelector(config.pages.postAccessRootNew);
 
     const postAccessRoot = isNewUI ? isNewUI : document.querySelector(config.pages.postAccessRoot);
-
     // Check if 5 seconds have passed
     if (Date.now() - startTime > 5000) {
       return;
@@ -84,23 +78,26 @@ const OverlayView = () => {
 
   const handleContinueBtn = async () => {
     const nextButton: HTMLButtonElement = document.querySelector(config.pages.continueWithAuthoreonBtnInjectSelector);
-    const files = await getAllFiles();
-    console.log('files---', { files });
     if (nextButton) {
       nextButton?.click();
       nextButton.removeAttribute('style');
       hidePostAccess();
     }
   };
+
   const handleOpen = React.useCallback(async () => {
     setIsOpen(true);
-    const themeColorEle = document?.head?.querySelector('meta[name="theme-color"]');
-    console.log('themeColorEle', themeColorEle);
-    const themeColor = themeColorEle?.getAttribute('content');
-    setCurrentTheme(themeColor === '#131313' ? 'dark' : 'light');
   }, []);
-
+  const checkThemeAndData = async (data: AccessRulesData[]) => {
+    const themeColorEle = document?.head?.querySelector('meta[name="theme-color"]');
+    const themeColor = themeColorEle?.getAttribute('content');
+    setCurrentTheme(themeColor.includes('#131313') ? 'dark' : 'light');
+    if (!data?.length) {
+      await submitFeedback(schedulingOptionsFeedbacks);
+    }
+  };
   const handleMessage = event => {
+    // getting the access rules data from event
     if (event?.data.type === 'access-rules') {
       extractAccessRulesWithRewards(event.data.accessRules);
     }
@@ -123,86 +120,15 @@ const OverlayView = () => {
   };
 
   const extractAccessRulesWithRewards = async (accessRules: any[]) => {
-    // First, create a map of reward information by reward_id
-    const rewardMap = {};
-
-    accessRules?.forEach(item => {
-      if (item.type === 'reward') {
-        rewardMap[item.id] = {
-          reward_id: item.id,
-          amount_cents: item.attributes.amount_cents,
-          currency: item.attributes.currency,
-          is_free_tier: item.attributes.is_free_tier,
-          title: item.attributes.title,
-          published: item.attributes.published,
-        };
-      }
-    });
-    // Now, extract access rules and associate rewards
-    const result = [];
-    accessRules.forEach(item => {
-      if (item.type === 'access-rule') {
-        const accessRule = {
-          access_rule_id: item.id,
-          reward_id: null, // Default reward_id is null
-          description: null,
-          is_free_tier: null,
-          amount_cents: item.attributes?.amount_cents,
-          title: item?.attributes?.access_rule_type,
-          published: null,
-        };
-
-        // Check if the access-rule has a tier (reward)
-        if (item.relationships && item.relationships.tier && item.relationships.tier.data) {
-          const rewardId = item?.relationships?.tier?.data?.id;
-          if (rewardMap[rewardId]) {
-            // Add reward information from rewardMap
-            accessRule.reward_id = rewardMap[rewardId]?.reward_id;
-            accessRule.description = `$${convertCentsToDollars(rewardMap[rewardId]?.amount_cents)}/month`;
-            accessRule.is_free_tier = rewardMap[rewardId]?.is_free_tier;
-            accessRule.title = rewardMap[rewardId]?.title;
-            accessRule.amount_cents = rewardMap[rewardId]?.amount_cents;
-            accessRule.published = rewardMap[rewardId]?.published;
-          }
-        }
-
-        // Push the extracted information to result array
-        result.push(accessRule);
-      }
-    });
-
-    const sortedData = result.sort((a, b) => {
-      // Define sort order values
-      const getTypeOrder = item => {
-        if (item.title.toLowerCase() === 'public') return 1;
-        if (item.is_free_tier) return 2;
-        if (item.title.toLowerCase() === 'patrons') return 3;
-        return 4; // For paid tiers
-      };
-
-      const typeOrderA = getTypeOrder(a);
-      const typeOrderB = getTypeOrder(b);
-
-      // Sort by type first
-      if (typeOrderA !== typeOrderB) {
-        return typeOrderA - typeOrderB;
-      }
-
-      // For paid tiers, sort by amount_cents in ascending order
-      if (typeOrderA === 4 && typeOrderB === 4) {
-        return (a.amount_cents || 0) - (b.amount_cents || 0);
-      }
-
-      return 0; // No sorting needed if they are of the same type and not paid tiers
-    });
-
-    await accessRulesStorage.add(sortedData);
+    const schedulingOptions = generateSchedulingOptions(accessRules);
+    await accessRulesStorage.add(schedulingOptions);
   };
   const OnChromeMessage = React.useCallback(action => {
     if (action.message === 'scheduling-option-modal') {
       setIsOpen(true);
     }
   }, []);
+
   React.useEffect(() => {
     window.addEventListener('message', handleMessage);
     let continueWithAuthoreonBtn;
@@ -225,9 +151,9 @@ const OverlayView = () => {
         }
       }
     });
+
     observer.observe(document?.body, { childList: true, subtree: true });
     chrome.runtime.onMessage.addListener(OnChromeMessage);
-
     return () => {
       //cleanup all the listener
       observer.disconnect();
@@ -238,11 +164,16 @@ const OverlayView = () => {
       localStorage.removeItem('scheduling-data');
     };
   }, []);
-
+  // Set the scheduling options from storage
   React.useEffect(() => {
     setData(accessRuleData ?? []);
   }, [accessRuleData]);
-
+  React.useEffect(() => {
+    if (isOpen) {
+      checkThemeAndData(data);
+    }
+  }, [isOpen]);
+  // handle the image file upload
   const callBack = React.useCallback(async (event: any) => {
     const files = event?.target?.files;
     imageFileHandler(files);
@@ -252,14 +183,13 @@ const OverlayView = () => {
     imageFileInput2?.removeEventListener('change', callBack);
     imageFileInput2?.addEventListener('change', callBack);
   };
+
   React.useEffect(() => {
     const selectImage = document.querySelector('[data-tag="IconPhoto"]');
-
     if (selectImage) {
       const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
       addMoreImagesHandler(imageFileInput);
     }
-
     return () => {
       const imageFileInput2: HTMLInputElement = document.querySelector(config.pages.addMoreImages);
 
@@ -268,7 +198,6 @@ const OverlayView = () => {
   }, [fileStorage]);
 
   const createPostBtnHandler = React.useCallback(createPostBtnListener, []);
-
   // getting the create post button
   React.useEffect(() => {
     const createPostBtnEle = document?.querySelector(
@@ -298,8 +227,8 @@ const OverlayView = () => {
     const selectedDate = new Date(`${date}T${time}`);
     const currentDate = new Date();
 
-    // Add 6 minutes to the current time for validation
-    const minFutureDate = new Date(currentDate.getTime() + 5 * 50000); // 6 minutes in milliseconds
+    // Add 5 minutes to the current time for validation
+    const minFutureDate = new Date(currentDate.getTime() + 5 * 50000); // 5 minutes in milliseconds
     if (selectedDate <= currentDate) {
       setError({ message: 'You cannot select a past date', rowId });
       return false;
@@ -352,6 +281,7 @@ const OverlayView = () => {
 
     return true;
   };
+  const scheduleBtnListener = React.useCallback(scheduleBtnClick, []);
   const handleClose = async () => {
     if (schedulingCounter?.usedCounter === 2 && !schedulingCounter?.hasAnswered) {
       setSchedulingPopUp(true);
@@ -375,6 +305,12 @@ const OverlayView = () => {
       }
 
       await schedulingStorage.add(selected?.slice(1, selected?.length));
+      const scheduleBtn = document.querySelector(config.pages.continueWithAuthoreonBtnInjectSelector);
+      // append the schedule button click listener
+      if (scheduleBtn && scheduleBtn?.textContent === 'Schedule') {
+        scheduleBtn.removeEventListener('click', scheduleBtnListener);
+        scheduleBtn.addEventListener('click', scheduleBtnListener);
+      }
     } else {
       toast.error('Please ensure all selected tiers have a date and time');
     }
@@ -389,13 +325,6 @@ const OverlayView = () => {
           style={customStyles}
           onAfterOpen={() => (document.body.style.overflow = 'hidden')}
           onAfterClose={() => (document.body.style.overflow = 'unset')}>
-          {/* <div
-            className={`overlay__close `}
-            onClick={handleClose}
-            data-tooltip-content="Close Post"
-            data-tooltip-id="my-tooltip">
-            <X size={25} />
-          </div> */}
           <div style={{ textAlign: 'right' }}>
             <img
               src={

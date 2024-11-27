@@ -2,10 +2,11 @@
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
 import { Modal } from '@root/src/shared/components/modal/Modal';
-import axios from 'axios';
+
 import LoadingOverlay from 'react-loading-overlay-ts';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { submitFeedback } from '@root/src/shared/utils/common';
 
 const FeedbackPopUp = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -19,17 +20,6 @@ const FeedbackPopUp = () => {
     } else {
       setFeedback('');
       setIsModalOpen(false);
-    }
-  };
-  const detectBrowser = () => {
-    const userAgent = navigator?.userAgent;
-
-    if (userAgent.includes('Firefox')) {
-      return 'firefox';
-    } else if (userAgent.includes('Chrome')) {
-      return 'chrome';
-    } else {
-      return 'unknown';
     }
   };
 
@@ -67,11 +57,8 @@ const FeedbackPopUp = () => {
     try {
       setConfirmation(false);
       setIsLoading(true);
-      const response = await axios.post(`https://www.readeon.com/api/feedbacks/create`, {
-        feedback: feedback,
-        browser: detectBrowser(),
-        extension: 'Scheduleon',
-      });
+      const response = await submitFeedback(feedback);
+
       if (response?.status === 201) {
         setIsLoading(false);
         setIsModalOpen(false);

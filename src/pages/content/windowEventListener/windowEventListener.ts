@@ -25,7 +25,6 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
     if (event.data.type === 'media-file-response') {
       const responseData = event.data?.mediaResponse;
-      console.log('responseData', { responseData });
       fileDataUpdateId(responseData).then();
     }
     if (event.data.type === 'post-update-response') {

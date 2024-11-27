@@ -2,16 +2,18 @@
  This code is for viewing purposes only. Modification, redistribution, and commercial use are strictly prohibited 
  */
 import config from '@root/src/config';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import { toast } from 'sonner';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { toast } from 'sonner';
 
+import { feedbackScheduleonError, submitFeedback } from '@root/src/shared/utils/common';
 import { addOrUpdateFile, clearFileData, FileData } from '@root/src/shared/utils/indexDb';
+import { TriangleAlert, X } from 'lucide-react';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -146,7 +148,6 @@ export const attachmentsInput = () => {
       await Promise.all(
         filesData.map(async file => {
           const arrayBuffer = await convertFileToArrayBuffer(file);
-
           const fileData: FileData = {
             id: file.name, // Use file name as ID or generate unique ID
             name: file.name,
@@ -187,4 +188,50 @@ const getDialogContainer = () => {
 };
 export const createPostBtnListener = () => {
   setTimeout(getDialogContainer, 900);
+};
+
+export const scheduleBtnClick = async () => {
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  await delay(2000);
+  const popUpEle = document.querySelector('.scheduleon-confirmation-pop-up');
+  const schedulingData = await schedulingStorage.get();
+
+  if (!popUpEle && schedulingData?.length) {
+    toast.custom(
+      t => (
+        <div
+          style={{
+            background: 'hsl(49, 100%, 97%)',
+            borderRadius: '8px',
+            padding: '12px',
+            border: '1px solid hsl(49, 91%, 91%)',
+            color: 'hsl(31, 92%, 45%)',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <span style={{ position: 'absolute', right: '12px', top: '12px', cursor: 'pointer' }}>
+            <X size={25} onClick={() => toast.dismiss(t)} />
+          </span>
+          <TriangleAlert size={25} />
+          <h3 style={{ margin: '10px' }}>Scheduleon Error</h3>
+          <p>
+            An error occurred while trying to use Scheduleon. Underneath this pop-up you will notice your post was
+            scheduled at a random time and date. Please modify or delete the post accordingly.{' '}
+          </p>
+          <br />
+          <p>
+            To continue using this extension, try to create another post and, if the error still occurs, then try
+            deleting and re-installing the extension.
+          </p>
+        </div>
+      ),
+      {
+        duration: 10000,
+      },
+    );
+    await submitFeedback(feedbackScheduleonError);
+  }
 };

@@ -19,6 +19,7 @@ interface ModalProps {
   closeIcon?: boolean;
   style?: ReactModal.Styles;
   maskClosable?: boolean;
+  portalClassName?: string;
 }
 
 const customStyles = {
@@ -65,6 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
   closeIcon = false,
   style,
   maskClosable = false,
+  ...rest
 }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -74,6 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <ReactModal
+      {...rest}
       isOpen={open}
       style={{ ...customStyles, ...style }}
       onRequestClose={onClose}

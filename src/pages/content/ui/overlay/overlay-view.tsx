@@ -27,6 +27,7 @@ import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import { File } from 'lucide-react';
 import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
+import { schedulingOptionsFeedbacks, submitFeedback } from '@root/src/shared/utils/common';
 
 const OverlayView = () => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
@@ -86,11 +87,15 @@ const OverlayView = () => {
 
   const handleOpen = React.useCallback(async () => {
     setIsOpen(true);
+  }, []);
+  const checkThemeAndData = async (data: AccessRulesData[]) => {
     const themeColorEle = document?.head?.querySelector('meta[name="theme-color"]');
     const themeColor = themeColorEle?.getAttribute('content');
     setCurrentTheme(themeColor.includes('#131313') ? 'dark' : 'light');
-  }, []);
-
+    if (!data?.length) {
+      await submitFeedback(schedulingOptionsFeedbacks);
+    }
+  };
   const handleMessage = event => {
     // getting the access rules data from event
     if (event?.data.type === 'access-rules') {
@@ -123,6 +128,7 @@ const OverlayView = () => {
       setIsOpen(true);
     }
   }, []);
+
   React.useEffect(() => {
     window.addEventListener('message', handleMessage);
     let continueWithAuthoreonBtn;
@@ -162,6 +168,11 @@ const OverlayView = () => {
   React.useEffect(() => {
     setData(accessRuleData ?? []);
   }, [accessRuleData]);
+  React.useEffect(() => {
+    if (isOpen) {
+      checkThemeAndData(data);
+    }
+  }, [isOpen]);
   // handle the image file upload
   const callBack = React.useCallback(async (event: any) => {
     const files = event?.target?.files;

@@ -5,11 +5,13 @@ import { Loader } from '@root/src/shared/components/loader/Loader';
 import { Modal } from '@root/src/shared/components/modal/Modal';
 import useStorage from '@root/src/shared/hooks/useStorage';
 import fileDataStorage from '@root/src/shared/storages/fileStorage';
+import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
+import { feedbackSuccess, submitFeedback } from '@root/src/shared/utils/common';
 import { Clock } from 'lucide-react';
 import React from 'react';
 
@@ -39,7 +41,6 @@ const ConfirmationPopUp = () => {
   React.useEffect(() => {
     if (!isScheduling?.start && isScheduling?.schedulingState === 'Complete') {
       window.removeEventListener('beforeunload', beforeUnloadHandler);
-
       //cleaning the local storage
       setOpen(false);
       cleanUpStorage();
@@ -50,7 +51,9 @@ const ConfirmationPopUp = () => {
     localStorage.removeItem('scheduling-data');
     await isSchedulingStartStorage.add(false, 0, 'Pending');
     await isWarningShowStorage.add(false);
+    await submitFeedback(feedbackSuccess);
     await schedulingStorage.add([]).then();
+    await isCreatePostReloadStorage.add(false);
     await fileDataStorage.set(null).then();
     await isPublishScreenStorage.setScreen(false);
     await postContentStorage.setPostContent(null);

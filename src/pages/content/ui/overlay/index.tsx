@@ -10,6 +10,7 @@ import postContentStorage from '@root/src/shared/storages/post-content-storage';
 import extEnableStorage from '@root/src/shared/storages/extEnableStorage';
 import FeedbackPopUp from '../feedback';
 import ScheduleonControl from '../scheduleon-control';
+import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 refreshOnUpdate('pages/content/ui');
 
 (() => {
@@ -168,6 +169,40 @@ refreshOnUpdate('pages/content/ui');
       }
     }
   });
+  const reloadTab = async () => {
+    const pathname = window.location.pathname; // Extract the URL from the active tab
+    const cretePostReload = await isCreatePostReloadStorage.get();
+    const isEditPost = document.querySelector(config.pages.headerRootSelector)?.textContent?.includes('Edit');
+    if (pathname.includes('edit') && !cretePostReload && !isEditPost) {
+      await isCreatePostReloadStorage.add(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 600);
+    }
+    if (pathname.includes('library') && cretePostReload) {
+      await isCreatePostReloadStorage.add(false);
+    }
+  };
+  // Function to start observing
+  const trackUrlChanges = () => {
+    let currentPathname = window.location.pathname;
+
+    const observer = new MutationObserver(async () => {
+      const newPathname = window.location.pathname;
+      if (newPathname !== currentPathname) {
+        currentPathname = newPathname; // Update the tracked pathname
+        await reloadTab(); // Execute your function on URL change
+        observer.disconnect();
+      }
+    });
+
+    // Observe changes in the body element and its subtree
+    observer.observe(document.body, { childList: true, subtree: true });
+  };
+
+  // Start the observer
+  trackUrlChanges();
+
   reportIssuePatreon();
   //* this function runs one time and inject the buttons into the sidebar
   injectButtonListener();

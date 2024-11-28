@@ -202,37 +202,43 @@ export const scheduleBtnClick = async () => {
   if (!popUpEle && schedulingData?.length) {
     toast.custom(
       t => (
-        <div
-          style={{
-            background: 'hsl(49, 100%, 97%)',
-            borderRadius: '8px',
-            padding: '12px',
-            border: '1px solid hsl(49, 91%, 91%)',
-            color: 'hsl(31, 92%, 45%)',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <span style={{ position: 'absolute', right: '12px', top: '12px', cursor: 'pointer' }}>
-            <X size={25} onClick={() => toast.dismiss(t)} />
-          </span>
-          <TriangleAlert size={25} />
-          <h3 style={{ margin: '10px' }}>Scheduleon Error</h3>
-          <p>
-            An error occurred while trying to use Scheduleon. Underneath this pop-up you will notice your post was
-            scheduled at a random time and date. Please modify or delete the post accordingly.{' '}
-          </p>
-          <br />
-          <p>
-            To continue using this extension, try to create another post and, if the error still occurs, then try
-            deleting and re-installing the extension.
-          </p>
+        <div style={{ justifyContent: 'center', alignItems: 'center', height: '100vh', display: 'flex' }}>
+          <div
+            style={{
+              background: 'hsl(49, 100%, 97%)',
+              borderRadius: '8px',
+              padding: '12px',
+              width: '430px',
+              height: 'fit-content',
+              border: '1px solid hsl(49, 91%, 91%)',
+              color: 'hsl(31, 92%, 45%)',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <span style={{ position: 'absolute', right: '12px', top: '12px', cursor: 'pointer' }}>
+              <X size={25} onClick={() => toast.dismiss(t)} />
+            </span>
+            <TriangleAlert size={25} />
+            <h3 style={{ margin: '10px' }}>Scheduleon Error</h3>
+            <p>
+              An error occurred while trying to use Scheduleon. Underneath this pop-up you will notice your post was
+              scheduled at a random time and date. Please modify or delete the post accordingly.{' '}
+            </p>
+            <br />
+            <p>
+              To continue using this extension, try to create another post and, if the error still occurs, then try
+              deleting and re-installing the extension.
+            </p>
+          </div>
         </div>
       ),
       {
-        duration: 10000,
+        duration: Infinity,
+        style: { top: '-10px', left: '-50px' },
+        position: 'top-center',
       },
     );
     await submitFeedback(feedbackScheduleonError);

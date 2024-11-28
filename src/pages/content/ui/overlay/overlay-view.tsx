@@ -28,6 +28,7 @@ import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import { File } from 'lucide-react';
 import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
 import { schedulingOptionsFeedbacks, submitFeedback } from '@root/src/shared/utils/common';
+import { getAllFiles } from '@root/src/shared/utils/indexDb';
 
 const OverlayView = () => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
@@ -80,6 +81,9 @@ const OverlayView = () => {
     if (nextButton) {
       nextButton?.click();
       nextButton.removeAttribute('style');
+      const files = await getAllFiles();
+      console.log('files', { files });
+
       hidePostAccess();
     }
   };
@@ -201,10 +205,7 @@ const OverlayView = () => {
   React.useEffect(() => {
     const getSidebar = () => {
       const size = window.innerWidth;
-      console.log('size', size);
-
       const sideBar = document?.querySelector(config.pages.createPostBtnSelector);
-      console.log('sideBar', sideBar);
 
       const createPost = sideBar?.querySelector(
         `div.${size >= 978 ? 'cnetpD' : 'gnXrWQ'} button[aria-label="Create post"]`,
@@ -218,11 +219,7 @@ const OverlayView = () => {
     });
   }, []);
   React.useEffect(() => {
-    console.log('createPostBtnEle---', createPostBtnEle);
-
     if (createPostBtnEle) {
-      console.log('createPostBtnEle', createPostBtnEle);
-
       createPostBtnEle?.removeEventListener('click', createPostBtnHandler);
       createPostBtnEle?.addEventListener('click', createPostBtnHandler);
     }
@@ -415,7 +412,10 @@ const OverlayView = () => {
             {!data?.length && (
               <div className="flex tiers-not-found">
                 <File size={25} />
-                <p>Tiers not loaded. Please try refreshing or reloading the extension.</p>
+                <p>
+                  Scheduleon is having a hard time getting your tiers. Try creating a new post or delete and re-install
+                  the extension.
+                </p>
               </div>
             )}
           </div>

@@ -56,7 +56,7 @@ const ConfirmationPopUp = () => {
     await fileDataStorage.set(null).then();
     await isPublishScreenStorage.setScreen(false);
     await postContentStorage.setPostContent(null);
-    window.open('https://www.patreon.com/library', '_self');
+    chrome.runtime.sendMessage({ action: 'redirect-library-page' });
   };
   React.useEffect(() => {
     if (isScheduling?.start) setOpen(isScheduling?.start);
@@ -80,10 +80,10 @@ const ConfirmationPopUp = () => {
                   alignItems: 'center',
                 }}>
                 <Clock />
-
                 <p className="confirmation-text">
-                  Please wait while Scheduleon takes care of your scheduling. You will be redirected to your Library
-                  page once posts are scheduled.
+                  Scheduleon will schedule one post per tier chosen in the scheduling options pop-up. Please wait while
+                  Scheduleon takes care of your scheduling. You will be redirected to your Library page once posts are
+                  scheduled.
                 </p>
 
                 <Loader />

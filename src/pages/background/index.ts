@@ -5,14 +5,8 @@ import userDataStorage from '@root/src/shared/storages/user-storage';
 import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
 
-import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
-import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
-import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
-
-import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import accessRulesStorage from '@root/src/shared/storages/accessRuleStorage';
 import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
-import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 
 // reloadOnUpdate('pages/background');
 
@@ -22,6 +16,7 @@ import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostRel
  */
 reloadOnUpdate('pages/content/style.scss');
 const shownTabs = {};
+
 chrome.runtime.onInstalled.addListener(() => {
   reloadPatreon();
   openOrFocusTab('https://www.patreon.com', 'https://www.patreon.com');
@@ -54,9 +49,19 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     if (isPatreonUrl(tab.url)) {
       const patreonSession = await chrome.cookies?.get({ url: 'https://www.patreon.com', name: 'session_id' });
-
       userDataStorage.add({ isLoggedIn: !!patreonSession });
+      chrome.tabs.query({}, tanInfo => {
+        const patreonTabs = tanInfo?.filter(
+          tab => tab?.url?.startsWith('https://www.patreon.com') && new URL(tab?.url)?.pathname?.includes('edit'),
+        );
 
+        if (patreonTabs?.length > 1 && patreonSession?.value) {
+          chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: ['src/pages/contentWarningScript/index.js'],
+          });
+        }
+      });
       if (!shownTabs[tabId] && patreonSession?.value) {
         // Check if banner has already been shown on this tab
         // Inject content script to show the banner
@@ -86,11 +91,12 @@ chrome.tabs.onRemoved.addListener(async tabId => {
   if (shownTabs[tabId]) {
     delete shownTabs[tabId];
   }
-  await isSchedulingStartStorage.add(false, 0, 'Pending');
-  await isWarningShowStorage.add(false);
-  await schedulingStorage.add([]);
-  await isCreatePostReloadStorage.add(false);
-  await isPublishScreenStorage.setScreen(false);
+
+  // await isSchedulingStartStorage.add(false, 0, 'Pending');
+  // await isWarningShowStorage.add(false);
+  // await schedulingStorage.add([]);
+  // await isCreatePostReloadStorage.add(false);
+  // await isPublishScreenStorage.setScreen(false);
 });
 // Listen for when the tab becomes inactive
 chrome.tabs.onActivated.addListener(activeInfo => {
@@ -111,9 +117,12 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'Open_PopUp') {
     chrome.action.openPopup().then();
   }
-  // if (request.action === 'redirect-library-page') {
-  //   openOrFocusTab(`${patreonUrl}/library`, patreonUrl);
-  // }
+  if (request.action === 'redirect-library-page') {
+    chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
+      const tabData = tabs[0];
+      chrome.tabs.update(tabData.id, { active: true, url: 'https://www.patreon.com/library' });
+    });
+  }
 });
 //* this below listener is used to track the theme changes in the cookies
 

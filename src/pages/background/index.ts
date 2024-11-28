@@ -54,7 +54,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     if (isPatreonUrl(tab.url)) {
       const patreonSession = await chrome.cookies?.get({ url: 'https://www.patreon.com', name: 'session_id' });
-      reloadTab(tab?.url);
+
       userDataStorage.add({ isLoggedIn: !!patreonSession });
 
       if (!shownTabs[tabId] && patreonSession?.value) {
@@ -64,7 +64,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           target: { tabId: tabId },
           files: ['src/pages/contentBannerScript/index.js'],
         });
-
         // Mark this tab as having shown the banner
         shownTabs[tabId] = true;
       }
@@ -75,21 +74,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       }
     }
   }
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    files: ['src/pages/contentInjector/index.js'],
+    injectImmediately: true,
+  });
 });
-// adding this reload to inject the intercept script properly of create post page
-const reloadTab = async (currentUrl: string) => {
-  const url = new URL(currentUrl); // Extract the URL from the active tab
-  const cretePostReload = await isCreatePostReloadStorage.get();
-  if (url?.pathname.includes('edit') && !cretePostReload) {
-    await isCreatePostReloadStorage.add(true);
-    setTimeout(() => {
-      chrome.tabs.reload();
-    }, 600);
-  }
-  if (url?.pathname.includes('library') && cretePostReload) {
-    await isCreatePostReloadStorage.add(false);
-  }
-};
+
 // Listen for tab removal to clear stored data
 chrome.tabs.onRemoved.addListener(async tabId => {
   if (shownTabs[tabId]) {

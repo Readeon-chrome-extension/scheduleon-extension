@@ -34,11 +34,11 @@ const manifest = {
       "default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'  https://www.readeon.com/ https://www.patreon.com/; object-src 'self';",
   },
   content_scripts: [
-    {
-      matches: ['https://www.patreon.com/*'],
-      js: ['src/pages/contentInjector/index.js'],
-      run_at: 'document_start',
-    },
+    // {
+    //   matches: ['https://www.patreon.com/*'],
+    //   js: ['src/pages/contentInjector/index.js'],
+    //   run_at: 'document_start',
+    // },
     {
       matches: ['https://www.patreon.com/*'],
       js: ['src/pages/contentWindowEventListener/index.js'],

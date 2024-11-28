@@ -67,12 +67,14 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
   };
   const updateDeleteImageFiles = async (data: any) => {
-    const image_order = data?.data?.attributes?.post_metadata?.image_order;
+    const image_order: string[] = data?.data?.attributes?.post_metadata?.image_order;
+    const isValidArray = image_order.every(item => item !== null && item !== undefined);
     const files = await getAllFiles();
-    const removeIds = files?.filter(file => file.media_type === 'image_data' && !image_order.includes(file?.id));
-
-    removeIds?.forEach(async file => {
-      await handleFileRemoval(file?.id);
-    });
+    if (isValidArray) {
+      const removeIds = files?.filter(file => file.media_type === 'image_data' && !image_order.includes(file?.id));
+      removeIds?.forEach(async file => {
+        await handleFileRemoval(file?.id);
+      });
+    }
   };
 })();

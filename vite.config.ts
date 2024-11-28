@@ -40,6 +40,7 @@ export default defineConfig({
         background: resolve(pagesDir, 'background', 'index.ts'),
         contentStyle: resolve(pagesDir, 'content', 'style.scss'),
         contentBannerScript: resolve(pagesDir, 'content', 'banner', 'index.ts'),
+        contentWarningScript: resolve(pagesDir, 'content', 'warningPopUp', 'index.ts'),
         popup: resolve(pagesDir, 'popup', 'index.html'),
       },
       output: {

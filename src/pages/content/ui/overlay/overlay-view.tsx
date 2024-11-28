@@ -28,7 +28,7 @@ import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import { File } from 'lucide-react';
 import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
 import { schedulingOptionsFeedbacks, submitFeedback } from '@root/src/shared/utils/common';
-import { getAllFiles } from '@root/src/shared/utils/indexDb';
+import { FileData, getAllFiles } from '@root/src/shared/utils/indexDb';
 
 const OverlayView = () => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
@@ -238,7 +238,7 @@ const OverlayView = () => {
     }
   };
   // Function to handle the combined DateTime validation
-  const validateDate = (date: string, time: string, rowId: string) => {
+  const validateDate = (date: string, time: string, rowId: string, files: FileData[]) => {
     const selectedDate = new Date(`${date}T${time}`);
     const currentDate = new Date();
 
@@ -249,7 +249,7 @@ const OverlayView = () => {
       return false;
     }
 
-    if (selectedDate <= minFutureDate) {
+    if (selectedDate <= minFutureDate && files?.length) {
       setError({ message: 'Please select a time at least 5 minutes in the future', rowId });
       return false;
     }
@@ -302,10 +302,10 @@ const OverlayView = () => {
       setSchedulingPopUp(true);
       return;
     }
-
+    const files = await getAllFiles();
     if (validate()) {
       for (const item of selected) {
-        if (!validateDate(item.date, item.time, item?.access_rule_id)) {
+        if (!validateDate(item.date, item.time, item?.access_rule_id, files)) {
           return;
         }
       }

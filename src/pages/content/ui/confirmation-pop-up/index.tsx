@@ -8,9 +8,8 @@ import fileDataStorage from '@root/src/shared/storages/fileStorage';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
-import postContentStorage from '@root/src/shared/storages/post-content-storage';
+import postContentStorage from '@root/src/shared/storages/postContentStorage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
-import { feedbackSuccess, submitFeedback } from '@root/src/shared/utils/common';
 import { Clock } from 'lucide-react';
 import React from 'react';
 
@@ -50,7 +49,6 @@ const ConfirmationPopUp = () => {
     localStorage.removeItem('scheduling-data');
     await isSchedulingStartStorage.add(false, 0, 'Pending');
     await isWarningShowStorage.add(false);
-    await submitFeedback(feedbackSuccess);
     await schedulingStorage.add([]).then();
 
     await fileDataStorage.set(null).then();

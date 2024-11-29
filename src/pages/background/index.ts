@@ -8,6 +8,7 @@ import { patreonUrl, webURL } from '../popup/components/Header';
 
 import accessRulesStorage from '@root/src/shared/storages/accessRuleStorage';
 import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
+import postContentStorage from '@root/src/shared/storages/postContentStorage';
 
 // reloadOnUpdate('pages/background');
 
@@ -49,14 +50,20 @@ const openOrFocusTab = (newUrl: string, baseUrl: string) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     if (isPatreonUrl(tab.url)) {
+      const postContent = await postContentStorage.get();
+
       const patreonSession = await chrome.cookies?.get({ url: 'https://www.patreon.com', name: 'session_id' });
+
       userDataStorage.add({ isLoggedIn: !!patreonSession });
       chrome.tabs.query({}, tanInfo => {
+        const postType = postContent.attributes?.post_type;
+        const isInValidPost = postType === 'video_external_file' || postType === 'audio_file';
         const patreonTabs = tanInfo?.filter(
           tab => tab?.url?.startsWith('https://www.patreon.com') && new URL(tab?.url)?.pathname?.includes('edit'),
         );
+        console.log('isInValidPost', { isInValidPost });
 
-        if (patreonTabs?.length > 1 && patreonSession?.value) {
+        if (patreonTabs?.length > 1 && patreonSession?.value && !isInValidPost) {
           chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: ['src/pages/contentWarningScript/index.js'],

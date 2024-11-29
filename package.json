@@ -1,10 +1,10 @@
 {
-  "name": "patreon-extension",
+  "name": "scheduleon-extension",
   "version": "1.0.4",
-  "description": "Patreon Chrome extension",
+  "description": "Scheduleon Chrome extension",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shubhamSainiCloudAnalogy/patreon-extension.git"
+    "url": "https://github.com/Readeon-chrome-extension/scheduleon-extension.git"
   },
   "license": "MIT",
   "type": "module",

@@ -6,7 +6,7 @@ import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 import { createRoot } from 'react-dom/client';
 import OverlayView from './overlay-view';
 import ConfirmationPopUp from '../confirmation-pop-up';
-import postContentStorage from '@root/src/shared/storages/post-content-storage';
+import postContentStorage from '@root/src/shared/storages/postContentStorage';
 import extEnableStorage from '@root/src/shared/storages/extEnableStorage';
 import FeedbackPopUp from '../feedback';
 import ScheduleonControl from '../scheduleon-control';
@@ -89,23 +89,28 @@ refreshOnUpdate('pages/content/ui');
   const checkValidView = async () => {
     const postContent = await postContentStorage.get();
     const isEditPost = document.querySelector(config.pages.headerRootSelector)?.textContent?.includes('Edit');
-    if (isEditPost) return false;
+    if (isEditPost) {
+      setTimeout(() => addWarningDiv(undefined, isEditPost), 900);
+      return false;
+    }
+    const postType = postContent?.attributes?.post_type;
+    const isInValidPost = postType === 'video_external_file' || postType === 'audio_file';
 
-    if (postContent?.body) {
-      const parsedData = JSON.parse(postContent?.body);
-      const postType =
-        parsedData?.data?.attributes?.post_type === 'video_external_file' ||
-        parsedData?.data?.attributes?.post_type === 'audio_file';
-
-      if (postType) return false;
+    if (isInValidPost) {
+      setTimeout(() => addWarningDiv(postType, isEditPost), 900);
+      return false;
     }
 
     return true;
   };
-  const addWarningDiv = () => {
+  const addWarningDiv = (type?: 'video_external_file' | 'audio_file', isEditPost?: boolean) => {
     const headerEle = document.querySelector(config.pages.headerRootSelector);
+    const isExist = document.getElementById('scheduleon-post-warning-container');
+    if (isExist) return;
+
     if (headerEle?.parentElement?.parentElement?.parentElement) {
       const warningDiv = `<div
+      id="scheduleon-post-warning-container"
       style="
         border: var(--global-borderWidth-thin) solid var(--global-border-action-default);
         border-radius: 'var(--global-radius-md)';
@@ -116,8 +121,7 @@ refreshOnUpdate('pages/content/ui');
         margin-bottom:12px;
         font-size:14px;
       ">
- Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience
-    </div>`;
+${type === 'audio_file' || type === 'video_external_file' ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
       headerEle?.parentElement?.parentElement?.parentElement.insertAdjacentHTML('afterbegin', warningDiv);
     }
   };

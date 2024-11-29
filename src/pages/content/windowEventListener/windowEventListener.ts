@@ -3,7 +3,7 @@
  */
 import csrfTokenStorage from '@root/src/shared/storages/csrf-token-storage';
 
-import postContentStorage from '@root/src/shared/storages/post-content-storage';
+import postContentStorage from '@root/src/shared/storages/postContentStorage';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 import { schedulingStart } from './utils';
 import { getAllFiles, handleFileRemoval, updateFileId } from '@root/src/shared/utils/indexDb';
@@ -17,6 +17,8 @@ refreshOnUpdate('pages/content/windowEventListener/index');
       csrfTokenStorage.setCsrfToken(event?.data?.csrfToken);
     }
     if (event.data.type === 'post-content') {
+      console.log('Post content', event?.data?.postContent);
+
       postContentStorage.setPostContent(event?.data?.postContent);
     }
     if (event.data.type === 'scheduling-start') {

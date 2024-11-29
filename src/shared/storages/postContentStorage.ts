@@ -4,24 +4,20 @@
 import { BaseStorage, createStorage, StorageType } from '@src/shared/storages/base';
 
 interface postContentTypes {
-  body: any;
-  headers: {
-    'Content-Type': string;
-    baggage: string;
-    'sentry-trace': string;
+  attributes: {
+    post_type: string;
   };
-  url: string;
 }
-type postContentStorageType = BaseStorage<postContentTypes> & {
+type PostContentStorageType = BaseStorage<postContentTypes> & {
   setPostContent: (postContent: postContentTypes) => Promise<void>;
 };
 
-const storage = createStorage<postContentTypes>('post-content-storage-key', null, {
+const storage = createStorage<postContentTypes>('scheduleon-post-content-storage-key', null, {
   storageType: StorageType.Local,
   liveUpdate: true,
 });
 
-const postContentStorage: postContentStorageType = {
+const postContentStorage: PostContentStorageType = {
   ...storage,
   setPostContent: async (postContent: postContentTypes) => {
     await storage.set(postContent);

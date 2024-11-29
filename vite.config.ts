@@ -36,7 +36,7 @@ export default defineConfig({
         contentWindowEventListener: resolve(pagesDir, 'content', 'windowEventListener', 'index.ts'),
         injectedScript: resolve(pagesDir, 'content', 'injectedScript', 'index.ts'),
         contentUI: resolve(pagesDir, 'content', 'ui', 'index.ts'),
-        contentInjector: resolve(pagesDir, 'content', 'injector', 'index.ts'),
+        injector: resolve(pagesDir, 'content', 'injector', 'injector.ts'),
         background: resolve(pagesDir, 'background', 'index.ts'),
         contentStyle: resolve(pagesDir, 'content', 'style.scss'),
         contentBannerScript: resolve(pagesDir, 'content', 'banner', 'index.ts'),

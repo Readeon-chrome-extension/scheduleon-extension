@@ -39,6 +39,6 @@ export default {
     addMoreImages: '[aria-label="Add more images"]',
     sideBarNavElementSelector: '[data-tag="navbar"] > nav > div',
     sideBarSelector: 'main-app-navigation',
-    createPostBtnSelector: 'nav[aria-label="Creator navigation"] > div:nth-child(2) div.cDPmHL',
+    createPostBtnSelector: 'nav[aria-label="Creator navigation"]  button[aria-label="Create post"]',
   },
 } as Config;

@@ -27,6 +27,11 @@
             type: 'access-rules',
             accessRules: accessRules?.included,
           });
+          console.log('fields[reward]', { accessRules });
+          window.parent.postMessage({
+            type: 'post-content',
+            postContent: accessRules?.data,
+          });
         }
         if (
           url?.startsWith('https://www.patreon.com/api/media?json-api-version=1.0&json-api-use-default-includes=false')
@@ -53,7 +58,7 @@
         try {
           window.parent.postMessage({
             type: 'post-content',
-            postContent: { body: init?.body, headers: init.headers, url: input },
+            postContent: JSON.parse(init?.body)?.data,
           });
         } catch (e) {
           console.error('Error parsing JSON:', e);

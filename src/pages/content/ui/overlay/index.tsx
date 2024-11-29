@@ -38,20 +38,23 @@ refreshOnUpdate('pages/content/ui');
   observer.observe(document?.body, { childList: true, subtree: true });
 
   const mountOverlay = async (overlayRootElement: Element) => {
-    const isValidView = await checkValidView();
     const extEnable = await extEnableStorage.get();
     if (!extEnable) {
+      localStorage.setItem('scheduleon-enable', 'false');
       return;
     }
+    const isValidView = await checkValidView();
+
     if (!isValidView) return;
 
     const overlayRoot = document.createElement('div');
     overlayRootElement.insertAdjacentElement('beforeend', overlayRoot);
-
+    localStorage.setItem('scheduleon-enable', 'true');
     const overlayRootIntoShadow = document.createElement('div');
     overlayRootIntoShadow.id = 'overlay-shadow-root-scheduleon';
 
     overlayRoot.id = `patreon-chrome-extension-creator-overlay-scheduleon`;
+    console.log('overlay inject');
 
     const styleDiv = document.createElement('div');
     overlayRoot.appendChild(overlayRootIntoShadow);
@@ -70,11 +73,13 @@ refreshOnUpdate('pages/content/ui');
     }
   };
   const mountShowOverlayBtn = async (overlayViewBtnELe: Element) => {
-    const isValidView = await checkValidView();
     const extEnable = await extEnableStorage.get();
     if (!extEnable) {
       return;
     }
+
+    const isValidView = await checkValidView();
+
     if (!isValidView) return;
 
     overlayViewBtnELe.setAttribute('style', 'display:none;');
@@ -154,11 +159,13 @@ ${type === 'audio_file' || type === 'video_external_file' ? 'Scheduleon does not
     <button class="common_button" id="support-scheduleon-feedback" style='padding:0;width:190px;font-size:12px;'>Give Scheduleon Feedback</button>
     </div>`;
 
-    if (extEnabled) navElement?.insertAdjacentHTML('beforeend', injectButton);
-    const sidebarElement = document?.getElementById('main-app-navigation');
-    const sideReadeonButtons = document?.getElementById('scheduleon-buttons-container') as HTMLElement;
-    if (sidebarElement?.clientWidth < 248) {
-      sideReadeonButtons.style.display = 'none';
+    if (extEnabled) {
+      navElement?.insertAdjacentHTML('beforeend', injectButton);
+      const sidebarElement = document?.getElementById('main-app-navigation');
+      const sideReadeonButtons = document?.getElementById('scheduleon-buttons-container') as HTMLElement;
+      if (sidebarElement?.clientWidth < 248 && sideReadeonButtons) {
+        sideReadeonButtons.style.display = 'none';
+      }
     }
   };
 

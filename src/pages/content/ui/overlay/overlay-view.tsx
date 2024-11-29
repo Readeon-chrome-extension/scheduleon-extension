@@ -42,7 +42,7 @@ const OverlayView = () => {
 
   const [currentTheme, setCurrentTheme] = React.useState('dark');
   const [schedulingPopUp, setSchedulingPopUp] = React.useState<boolean>(false);
-  const [createPostBtnEle, setCreatePostBtnEle] = React.useState<Element>();
+  // const [createPostBtnEle, setCreatePostBtnEle] = React.useState<Element>();
   const handleBackBtn = React.useCallback(backButtonHandler, []);
 
   const hidePostAccess = async (startTime: number = Date.now()) => {
@@ -202,28 +202,32 @@ const OverlayView = () => {
 
   const createPostBtnHandler = React.useCallback(createPostBtnListener, []);
   // getting the create post button
-  React.useEffect(() => {
-    const getSidebar = () => {
-      const size = window.innerWidth;
-      const sideBar = document?.querySelector(config.pages.createPostBtnSelector);
+  // React.useEffect(() => {
+  //   const getSidebar = () => {
+  //     // const size = window.innerWidth;
+  //     const sideBar = document?.querySelector(config.pages.createPostBtnSelector);
 
-      const createPost = sideBar?.querySelector(
-        `div.${size >= 978 ? 'cnetpD' : 'gnXrWQ'} button[aria-label="Create post"]`,
-      );
-      return createPost;
-    };
-    setCreatePostBtnEle(getSidebar());
+  //     const createPost = sideBar?.querySelector(`button[aria-label="Create post"]`);
+  //     console.log('createPost--', createPost);
 
-    window?.addEventListener('resize', () => {
-      setCreatePostBtnEle(getSidebar());
-    });
-  }, []);
+  //     return createPost;
+  //   };
+  //   // setCreatePostBtnEle(getSidebar());
+
+  //   // window?.addEventListener('resize', () => {
+  //   //   setCreatePostBtnEle(getSidebar());
+  //   // });
+  // }, []);
   React.useEffect(() => {
+    const createPostBtnEle = document?.querySelector(config.pages.createPostBtnSelector);
+    console.log('createPostBtnEle', createPostBtnEle);
+
     if (createPostBtnEle) {
-      createPostBtnEle?.removeEventListener('click', createPostBtnHandler);
+      // createPostBtnEle?.removeEventListener('click', createPostBtnHandler);
       createPostBtnEle?.addEventListener('click', createPostBtnHandler);
     }
-  }, [createPostBtnEle]);
+  }, []);
+
   // Function to handle checkbox toggle
   const handleCheckboxChange = (access_rule_id: string) => {
     setError(null);

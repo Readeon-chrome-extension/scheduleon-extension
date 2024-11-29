@@ -119,6 +119,10 @@
       return originalFetch(input, init);
     };
   };
-  getIntercepts();
-  modifyFetch();
+  const isEnable = localStorage.getItem('scheduleon-enable');
+  console.log('injected Script', isEnable);
+  if (isEnable === 'true') {
+    getIntercepts();
+    modifyFetch();
+  }
 })();

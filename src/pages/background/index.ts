@@ -61,8 +61,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         const patreonTabs = tanInfo?.filter(
           tab => tab?.url?.startsWith('https://www.patreon.com') && new URL(tab?.url)?.pathname?.includes('edit'),
         );
-        console.log('isInValidPost', { isInValidPost });
-
         if (patreonTabs?.length > 1 && patreonSession?.value && !isInValidPost) {
           chrome.scripting.executeScript({
             target: { tabId: tabId },
@@ -89,7 +87,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
   chrome.scripting.executeScript({
     target: { tabId: tabId },
-    files: ['src/pages/contentInjector/index.js'],
+    files: ['src/pages/injector/index.js'],
     injectImmediately: true,
   });
 });

@@ -85,11 +85,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       }
     }
   }
-  chrome.scripting.executeScript({
-    target: { tabId: tabId },
-    files: ['src/pages/injector/index.js'],
-    injectImmediately: true,
-  });
+  // Inject the main custom script to override Patreon's scheduling feature
+  chrome.scripting
+    .executeScript({
+      target: { tabId: tabId },
+      files: ['src/pages/injectedScript/index.js'],
+      world: 'MAIN', // Inject into MAIN world to bypass CSP
+      injectImmediately: true,
+    })
+    .catch(err => console.error('Error injecting injectedScript:', err));
 });
 
 // Listen for tab removal to clear stored data

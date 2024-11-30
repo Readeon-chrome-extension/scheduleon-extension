@@ -72,6 +72,7 @@
         input.split('?')[1].startsWith('include=access_rules.tier.null%2Cattachments.null')
       ) {
         const schedulingData = localStorage.getItem('scheduling-data');
+
         if (schedulingData) {
           const data = JSON.parse(schedulingData);
           const accessRules = {

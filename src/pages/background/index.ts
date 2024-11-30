@@ -9,6 +9,11 @@ import { patreonUrl, webURL } from '../popup/components/Header';
 import accessRulesStorage from '@root/src/shared/storages/accessRuleStorage';
 import { generateSchedulingOptions } from '@root/src/shared/utils/schedulingOptions';
 import postContentStorage from '@root/src/shared/storages/postContentStorage';
+import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStart';
+import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
+import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
+import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
+import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
 
 // reloadOnUpdate('pages/background');
 
@@ -18,7 +23,6 @@ import postContentStorage from '@root/src/shared/storages/postContentStorage';
  */
 reloadOnUpdate('pages/content/style.scss');
 const shownTabs = {};
-
 chrome.runtime.onInstalled.addListener(() => {
   reloadPatreon();
   openOrFocusTab('https://www.patreon.com', 'https://www.patreon.com');
@@ -85,11 +89,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       }
     }
   }
-  chrome.scripting.executeScript({
-    target: { tabId: tabId },
-    files: ['src/pages/injector/index.js'],
-    injectImmediately: true,
-  });
+  // Inject the main custom script to override Patreon's scheduling feature
+  chrome.scripting
+    .executeScript({
+      target: { tabId: tabId },
+      files: ['src/pages/injectedScript/index.js'],
+      world: 'MAIN', // Inject into MAIN world to bypass CSP
+      injectImmediately: true,
+    })
+    .catch(err => console.error('Error injecting injectedScript:', err));
 });
 
 // Listen for tab removal to clear stored data
@@ -98,11 +106,12 @@ chrome.tabs.onRemoved.addListener(async tabId => {
     delete shownTabs[tabId];
   }
 
-  // await isSchedulingStartStorage.add(false, 0, 'Pending');
-  // await isWarningShowStorage.add(false);
-  // await schedulingStorage.add([]);
-  // await isCreatePostReloadStorage.add(false);
-  // await isPublishScreenStorage.setScreen(false);
+  await isSchedulingStartStorage.add(false, 0, 'Pending');
+  await isWarningShowStorage.add(false);
+  await schedulingStorage.add([]);
+  await postContentStorage.setPostContent(null);
+  await isCreatePostReloadStorage.add(false);
+  await isPublishScreenStorage.setScreen(false);
 });
 // Listen for when the tab becomes inactive
 chrome.tabs.onActivated.addListener(activeInfo => {

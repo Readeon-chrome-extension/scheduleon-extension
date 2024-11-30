@@ -46,6 +46,7 @@ export const createPayloadObj = payloadObj => {
 
 export const schedulingStart = async (body: any, headers: headersType, url: string) => {
   const schedulingData = await schedulingStorage.get();
+  console.log('schedulingData', { schedulingData });
 
   if (!schedulingData?.length) return;
 
@@ -285,7 +286,7 @@ const getRelationShipPayload = async (postId: string, headers: headersType, csrf
   const response = await axios.request(imageRelationConfig);
   return response?.data;
 };
-type headersType = {
+export type headersType = {
   'Content-Type': string;
   baggage: string;
   'sentry-trace': string;

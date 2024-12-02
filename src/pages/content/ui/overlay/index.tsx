@@ -54,7 +54,6 @@ refreshOnUpdate('pages/content/ui');
     overlayRootIntoShadow.id = 'overlay-shadow-root-scheduleon';
 
     overlayRoot.id = `patreon-chrome-extension-creator-overlay-scheduleon`;
-    console.log('overlay inject');
 
     const styleDiv = document.createElement('div');
     overlayRoot.appendChild(overlayRootIntoShadow);
@@ -94,15 +93,16 @@ refreshOnUpdate('pages/content/ui');
   const checkValidView = async () => {
     const postContent = await postContentStorage.get();
     const isEditPost = document.querySelector(config.pages.headerRootSelector)?.textContent?.includes('Edit');
+
     if (isEditPost) {
-      setTimeout(() => addWarningDiv(undefined, isEditPost), 900);
+      addWarningDiv(undefined, isEditPost);
       return false;
     }
     const postType = postContent?.attributes?.post_type;
     const isInValidPost = postType === 'video_external_file' || postType === 'audio_file';
 
     if (isInValidPost) {
-      setTimeout(() => addWarningDiv(postType, isEditPost), 900);
+      addWarningDiv(postType, isEditPost);
       return false;
     }
 
@@ -126,7 +126,7 @@ refreshOnUpdate('pages/content/ui');
         margin-bottom:12px;
         font-size:14px;
       ">
-${type === 'audio_file' || type === 'video_external_file' ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
+${(type === 'audio_file' || type === 'video_external_file') && !isEditPost ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
       headerEle?.parentElement?.parentElement?.parentElement.insertAdjacentHTML('afterbegin', warningDiv);
     }
   };

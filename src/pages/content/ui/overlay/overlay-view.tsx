@@ -83,7 +83,6 @@ const OverlayView = () => {
       nextButton.removeAttribute('style');
       const files = await getAllFiles();
       console.log('files', { files });
-
       hidePostAccess();
     }
   };
@@ -220,7 +219,6 @@ const OverlayView = () => {
   // }, []);
   React.useEffect(() => {
     const createPostBtnEle = document?.querySelector(config.pages.createPostBtnSelector);
-    console.log('createPostBtnEle', createPostBtnEle);
 
     if (createPostBtnEle) {
       // createPostBtnEle?.removeEventListener('click', createPostBtnHandler);

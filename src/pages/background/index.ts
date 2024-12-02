@@ -14,6 +14,7 @@ import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
 import isCreatePostReloadStorage from '@root/src/shared/storages/isCreatePostReload';
 import isPublishScreenStorage from '@root/src/shared/storages/isPublishScreen';
+import extEnableStorage from '@root/src/shared/storages/extEnableStorage';
 
 // reloadOnUpdate('pages/background');
 
@@ -32,7 +33,7 @@ const reloadPatreon = (url?: string) => {
     const patreonUrl = url ?? 'https://www.patreon.com';
     tabs.forEach(tab => {
       if (tab.url && tab.url.startsWith(patreonUrl)) {
-        chrome.tabs.reload(tab.id);
+        chrome.tabs.reload(tab.id).then();
       }
     });
   });
@@ -52,6 +53,7 @@ const openOrFocusTab = (newUrl: string, baseUrl: string) => {
 };
 // Listen for updates to tabs (e.g., navigation, reloads)
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  const isEnable = await extEnableStorage.get();
   if (changeInfo.status === 'complete') {
     if (isPatreonUrl(tab.url)) {
       const postContent = await postContentStorage.get();
@@ -60,7 +62,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
       userDataStorage.add({ isLoggedIn: !!patreonSession });
       chrome.tabs.query({}, tanInfo => {
-        const postType = postContent.attributes?.post_type;
+        const postType = postContent?.attributes?.post_type;
         const isInValidPost = postType === 'video_external_file' || postType === 'audio_file';
         const patreonTabs = tanInfo?.filter(
           tab => tab?.url?.startsWith('https://www.patreon.com') && new URL(tab?.url)?.pathname?.includes('edit'),
@@ -89,15 +91,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       }
     }
   }
-  // Inject the main custom script to override Patreon's scheduling feature
-  chrome.scripting
-    .executeScript({
-      target: { tabId: tabId },
-      files: ['src/pages/injectedScript/index.js'],
-      world: 'MAIN', // Inject into MAIN world to bypass CSP
-      injectImmediately: true,
-    })
-    .catch(err => console.error('Error injecting injectedScript:', err));
+  if (isEnable) {
+    // Inject the main custom script to override Patreon's scheduling feature
+    chrome.scripting
+      .executeScript({
+        target: { tabId: tabId },
+        files: ['src/pages/injectedScript/index.js'],
+        world: 'MAIN', // Inject into MAIN world to bypass CSP
+        injectImmediately: true,
+      })
+      .catch(err => console.error('Error injecting injectedScript:', err));
+  }
 });
 
 // Listen for tab removal to clear stored data
@@ -192,7 +196,6 @@ chrome.webRequest.onCompleted.addListener(
       const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
       await delay(2000);
       const accessRules = await accessRulesStorage.get();
-      console.log('accessRules', accessRules);
 
       if (!accessRules?.length) {
         const response = await fetch(url, { method, headers });

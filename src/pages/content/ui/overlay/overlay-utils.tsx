@@ -99,6 +99,7 @@ export const imageFileHandler = async (files: FileList) => {
           type: file.type,
           data: arrayBuffer,
           timestamp: Date.now(),
+          owner_relationship: 'main',
           idMediaType: `${file.name}_image_data`,
           media_type: 'image_data', // or 'image_data' depending on the file type
         };
@@ -156,6 +157,7 @@ export const attachmentsInput = () => {
             data: arrayBuffer,
             idMediaType: `${file.name}_attachment_data`,
             timestamp: Date.now(),
+            owner_relationship: 'attachment',
             media_type: 'attachment_data', // or 'image_data' depending on the file type
           };
 

@@ -98,6 +98,7 @@ export const imageFileHandler = async (files: FileList) => {
           name: file.name,
           type: file.type,
           data: arrayBuffer,
+          timestamp: Date.now(),
           idMediaType: `${file.name}_image_data`,
           media_type: 'image_data', // or 'image_data' depending on the file type
         };
@@ -129,7 +130,6 @@ export const attachmentsInput = () => {
   const fileInput: HTMLInputElement = document.querySelector(config.pages.attachmentsInput);
 
   const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
-  console.log('fileInput', { fileInput });
 
   fileInput?.addEventListener('change', async () => {
     const files = fileInput?.files;
@@ -155,6 +155,7 @@ export const attachmentsInput = () => {
             type: file.type,
             data: arrayBuffer,
             idMediaType: `${file.name}_attachment_data`,
+            timestamp: Date.now(),
             media_type: 'attachment_data', // or 'image_data' depending on the file type
           };
 
@@ -177,7 +178,7 @@ const getDialogContainer = () => {
   const containerOuter = document.querySelector('#post-creation-dailog');
 
   // cleanup the local storage when user start scheduling post
-  const containerInner = containerOuter?.querySelector('[data-tag="dialog-container"]');
+  const containerInner = containerOuter?.querySelector('[data-tag="dialog-body-area"]');
   containerInner?.addEventListener('click', async () => {
     localStorage.removeItem('scheduling-data');
     await isWarningShowStorage.add(false);

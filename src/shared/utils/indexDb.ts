@@ -3,12 +3,13 @@ export interface FileData {
   name: string;
   type: string;
   idMediaType: string;
+  timestamp: number;
   data: ArrayBuffer; // Base64-encoded data
   media_type: 'image_data' | 'attachment_data'; // 'attachment_data' or 'image_data'
 }
 
-const DB_NAME = 'fileDataStore';
-const DB_VERSION = 1;
+const DB_NAME = 'ScheduleonFileDataStore';
+const DB_VERSION = 2;
 const STORE_NAME = 'files';
 
 let db: IDBDatabase | null = null;
@@ -29,7 +30,7 @@ const openDB = (): Promise<IDBDatabase> => {
     request.onupgradeneeded = event => {
       const db = (event.target as IDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'name' }); // Use `name` as the unique key
+        db.createObjectStore(STORE_NAME, { keyPath: 'idMediaType' }); // Use `idMediaType` as the unique key
       }
     };
   });
@@ -45,7 +46,7 @@ export const addOrUpdateFile = async (file: FileData): Promise<void> => {
   const db = await getDB();
   const transaction = db.transaction(STORE_NAME, 'readwrite');
   const store = transaction.objectStore(STORE_NAME);
-  store.put(file); // Automatically overwrites if `name` matches
+  store.put(file); // Automatically overwrites if `idMediaType` matches
 };
 
 // Get all files from IndexedDB
@@ -56,7 +57,12 @@ export const getAllFiles = async (): Promise<FileData[]> => {
 
   const request = store.getAll();
   return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result as FileData[]);
+    request.onsuccess = () => {
+      const files = request.result as FileData[];
+      // Sort files by timestamp to maintain insertion order
+      files.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+      resolve(files);
+    };
     request.onerror = () => reject(`Error fetching files: ${request.error}`);
   });
 };
@@ -66,7 +72,6 @@ export const removeFileByName = async (idMediaType: string): Promise<void> => {
   const db = await getDB();
   const transaction = db.transaction(STORE_NAME, 'readwrite');
   const store = transaction.objectStore(STORE_NAME);
-  console.log('Removing file from DB:', { idMediaType });
 
   store.delete(idMediaType);
   return new Promise((resolve, reject) => {
@@ -82,6 +87,7 @@ export const updateFileId = async (name: string, id: string): Promise<void> => {
 
   if (file) {
     file.id = id; // Update the `id` field
+    file.timestamp = Date.now();
     await addOrUpdateFile(file); // Save updated file back to the database
   }
 };
@@ -102,9 +108,8 @@ export const clearFileData = async (): Promise<void> => {
 export const handleFileRemoval = async (id: string): Promise<void> => {
   const files = await getAllFiles();
   const fileToRemove = files.find(file => file.id === id);
-  console.log('fileToRemove', fileToRemove);
 
   if (fileToRemove) {
-    await removeFileByName(fileToRemove.name);
+    await removeFileByName(fileToRemove.idMediaType);
   }
 };

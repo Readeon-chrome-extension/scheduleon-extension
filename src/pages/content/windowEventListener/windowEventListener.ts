@@ -38,6 +38,7 @@ refreshOnUpdate('pages/content/windowEventListener/index');
     }
   });
   let schedulingStartDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let fileDataUpdateIdDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   const handleSchedulingStart = (body: any, headers: headersType, url: string) => {
     // Clear any existing debounce timer
     if (schedulingStartDebounceTimer) {
@@ -55,28 +56,31 @@ refreshOnUpdate('pages/content/windowEventListener/index');
   };
   const fileDataUpdateId = async (responseData: any) => {
     try {
+      // Clear any existing debounce timer
+      if (fileDataUpdateIdDebounceTimer) {
+        clearTimeout(fileDataUpdateIdDebounceTimer);
+        // pendingAttachmentUpdates = [];
+      }
       // Add the current update to the pending queue
       pendingAttachmentUpdates.push(responseData);
 
-      // Debounce logic to batch updates
-      clearTimeout(fileDataUpdateId.debounceTimer);
-      fileDataUpdateId.debounceTimer = setTimeout(async () => {
+      fileDataUpdateIdDebounceTimer = setTimeout(async () => {
         // Apply all pending updates
-        const updates = [...pendingAttachmentUpdates];
-        pendingAttachmentUpdates = []; // Clear queue after processing
+        const uniqueUpdates = Array.from(new Map(pendingAttachmentUpdates.map(item => [item.data.id, item])).values());
+        const updates = [...uniqueUpdates];
+        // Clear queue after processing
+        pendingAttachmentUpdates = [];
+        console.log('updates', { updates });
 
         updates.forEach(async res => {
-          await updateFileId(res?.data?.attributes?.file_name, res?.data.id);
+          await updateFileId(res?.data?.attributes?.file_name, res?.data?.attributes?.owner_relationship, res?.data.id);
         });
+        fileDataUpdateIdDebounceTimer = null;
       }, 400); // Debounce time (adjust as needed)
     } catch (error) {
       console.error('Error updating file data:', error);
     }
   };
-
-  // Define the debounceTimer as a static property
-
-  fileDataUpdateId.debounceTimer = null as NodeJS.Timeout | null;
 
   const deleteAttachment = async (id: string) => {
     if (id) {

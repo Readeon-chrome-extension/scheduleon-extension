@@ -4,6 +4,7 @@ export interface FileData {
   type: string;
   idMediaType: string;
   timestamp: number;
+  owner_relationship: string;
   data: ArrayBuffer; // Base64-encoded data
   media_type: 'image_data' | 'attachment_data'; // 'attachment_data' or 'image_data'
 }
@@ -81,10 +82,11 @@ export const removeFileByName = async (idMediaType: string): Promise<void> => {
 };
 
 // Update file `id` field using the name
-export const updateFileId = async (name: string, id: string): Promise<void> => {
+export const updateFileId = async (name: string, owner_relationship: string, id: string): Promise<void> => {
   const files = await getAllFiles();
-  const file = files.find(file => file.name === name);
 
+  const file = files.find(file => file.name === name && file.owner_relationship === owner_relationship);
+  console.log('file12344----', file);
   if (file) {
     file.id = id; // Update the `id` field
     file.timestamp = Date.now();

@@ -124,7 +124,7 @@ refreshOnUpdate('pages/content/ui');
         margin-bottom:12px;
         font-size:14px;
       ">
-${(type === 'audio_file' || type === 'video_external_file') && !isEditPost ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
+${(type === 'audio_file' || type === 'video_external_file') && !isEditPost ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'If you wish to use Scheduleon on draft posts, then make sure you remove and re-attach any attached files on the post before proceeding. Also, it is recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
       headerEle?.parentElement?.parentElement?.parentElement.insertAdjacentHTML('afterbegin', warningDiv);
     }
   };

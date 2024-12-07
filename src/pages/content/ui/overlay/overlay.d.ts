@@ -5,6 +5,7 @@ export interface selectedDataType {
   access_rule_id: string;
   date: string;
   time: string;
+  amount: number;
   date_time: string;
 }
 export interface ErrorTypes {

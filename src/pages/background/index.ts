@@ -136,8 +136,11 @@ chrome.runtime.onMessage.addListener(request => {
     chrome.action.openPopup().then();
   }
   if (request.action === 'redirect-library-page') {
-    chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
-      const tabData = tabs[0];
+    chrome.tabs.query({}, tabs => {
+      const patreonTab = tabs?.filter(
+        tab => new URL(tab?.url)?.pathname?.includes('edit') && new URL(tab?.url)?.origin === 'https://www.patreon.com',
+      );
+      const tabData = patreonTab[0];
       chrome.tabs.update(tabData.id, { active: true, url: 'https://www.patreon.com/library' });
     });
   }

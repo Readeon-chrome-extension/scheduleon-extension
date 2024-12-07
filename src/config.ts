@@ -15,10 +15,12 @@ export interface Config {
     backButton: string;
     overlayViewBtnContainer: string;
     imageInputField: string;
+    mediaInputField: string;
     attachmentsInput: string;
-    addMoreImages: string;
+
     sideBarNavElementSelector: string;
     sideBarSelector: string;
+    addMediaBtnSelector: string;
     createPostBtnSelector: string;
   };
 }
@@ -34,11 +36,12 @@ export default {
     continueWithAuthoreon: '#continue-with-authoreon-btn',
     backButton: 'button.flNEmp',
     overlayViewBtnContainer: '#open-overlay-view-btn-container',
-    imageInputField: '[accept="image/x-png,image/gif,image/jpeg,image/png"]',
+    imageInputField: '[accept="image/jpg,image/jpeg,image/png,image/gif"]',
     attachmentsInput: '#add-attachments-button > input',
-    addMoreImages: '[aria-label="Add more images"]',
+    mediaInputField: '[accept="video/*,audio/*,image/jpg,image/jpeg,image/png,image/gif"]',
+    addMediaBtnSelector: '.ngMis',
     sideBarNavElementSelector: '[data-tag="navbar"] > nav > div',
     sideBarSelector: 'main-app-navigation',
-    createPostBtnSelector: 'nav[aria-label="Creator navigation"]  button[aria-label="Create post"]',
+    createPostBtnSelector: 'nav[aria-label="Creator navigation"]  button[aria-label="Create post"].sc-jrQzAO.lnIhxN',
   },
 } as Config;

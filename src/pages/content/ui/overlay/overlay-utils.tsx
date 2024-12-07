@@ -80,8 +80,10 @@ export const combineDateTime = (date: string, time: string) => {
 
 export const imageFileHandler = async (files: FileList) => {
   const fileData = Array.from(files);
+  const imageFiles = fileData.filter(file => file.type.includes('image'));
+
   const isWarningShow = await isWarningShowStorage.get();
-  if (fileData?.length) {
+  if (imageFiles?.length) {
     if (!isWarningShow) {
       toast.warning('Scheduleon Warning: Attaching multiple files or large files may lead to performance issues', {
         closeButton: true,
@@ -90,10 +92,10 @@ export const imageFileHandler = async (files: FileList) => {
     }
     // Store the file buffers in IndexedDB
     await Promise.all(
-      fileData.map(async file => {
+      imageFiles.map(async file => {
         const arrayBuffer = await convertFileToArrayBuffer(file);
 
-        const fileData: FileData = {
+        const imageFileData: FileData = {
           id: file.name, // Use file name as ID or generate unique ID
           name: file.name,
           type: file.type,
@@ -104,7 +106,7 @@ export const imageFileHandler = async (files: FileList) => {
           media_type: 'image_data', // or 'image_data' depending on the file type
         };
 
-        await addOrUpdateFile(fileData); // Save file to IndexedDB
+        await addOrUpdateFile(imageFileData); // Save file to IndexedDB
         console.log(`File ${file.name} added to IndexedDB`);
       }),
     );
@@ -129,8 +131,6 @@ const convertFileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
 };
 export const attachmentsInput = () => {
   const fileInput: HTMLInputElement = document.querySelector(config.pages.attachmentsInput);
-
-  const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
 
   fileInput?.addEventListener('change', async () => {
     const files = fileInput?.files;
@@ -168,31 +168,16 @@ export const attachmentsInput = () => {
       fileDataStorage.toggleFileAdd();
     }
   });
-
-  imageFileInput?.addEventListener('change', async (event: any) => {
-    const files = event?.target?.files;
-
-    imageFileHandler(files);
-  });
 };
 
-const getDialogContainer = () => {
-  const containerOuter = document.querySelector('#post-creation-dailog');
-
-  // cleanup the local storage when user start scheduling post
-  const containerInner = containerOuter?.querySelector('[data-tag="dialog-body-area"]');
-  containerInner?.addEventListener('click', async () => {
-    localStorage.removeItem('scheduling-data');
-    await isWarningShowStorage.add(false);
-    await isCreatePostReloadStorage.add(false);
-    await schedulingStorage.add([]);
-    await clearFileData();
-    await fileDataStorage.set(null);
-    await isPublishScreenStorage.setScreen(false);
-  });
-};
-export const createPostBtnListener = () => {
-  setTimeout(getDialogContainer, 900);
+export const createPostBtnListener = async () => {
+  localStorage.removeItem('scheduling-data');
+  await isWarningShowStorage.add(false);
+  await isCreatePostReloadStorage.add(false);
+  await schedulingStorage.add([]);
+  await clearFileData();
+  await fileDataStorage.set(null);
+  await isPublishScreenStorage.setScreen(false);
 };
 
 export const scheduleBtnClick = async () => {

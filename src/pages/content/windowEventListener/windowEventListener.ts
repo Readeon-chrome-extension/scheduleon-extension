@@ -70,7 +70,6 @@ refreshOnUpdate('pages/content/windowEventListener/index');
         const updates = [...uniqueUpdates];
         // Clear queue after processing
         pendingAttachmentUpdates = [];
-        console.log('updates', { updates });
 
         updates.forEach(async res => {
           await updateFileId(res?.data?.attributes?.file_name, res?.data?.attributes?.owner_relationship, res?.data.id);

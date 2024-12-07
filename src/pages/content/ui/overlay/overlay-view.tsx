@@ -170,6 +170,7 @@ const OverlayView = () => {
   React.useEffect(() => {
     setData(accessRuleData ?? []);
   }, [accessRuleData]);
+
   React.useEffect(() => {
     if (isOpen) {
       checkThemeAndData(data);
@@ -187,36 +188,24 @@ const OverlayView = () => {
   };
 
   React.useEffect(() => {
-    const selectImage = document.querySelector('[data-tag="IconPhoto"]');
-    if (selectImage) {
-      const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
-      addMoreImagesHandler(imageFileInput);
-    }
-    return () => {
-      const imageFileInput2: HTMLInputElement = document.querySelector(config.pages.addMoreImages);
+    const getImageInput = async () => {
+      const files = await getAllFiles();
 
-      imageFileInput2?.removeEventListener('change', callBack);
+      if (files?.find(file => file.media_type === 'image_data')) {
+        const imageFileInput: HTMLInputElement = document.querySelector(config.pages.imageInputField);
+        if (!imageFileInput) {
+          setTimeout(getImageInput, 300);
+          return;
+        }
+
+        addMoreImagesHandler(imageFileInput);
+      }
     };
+    getImageInput();
   }, [fileStorage]);
 
   const createPostBtnHandler = React.useCallback(createPostBtnListener, []);
-  // getting the create post button
-  // React.useEffect(() => {
-  //   const getSidebar = () => {
-  //     // const size = window.innerWidth;
-  //     const sideBar = document?.querySelector(config.pages.createPostBtnSelector);
 
-  //     const createPost = sideBar?.querySelector(`button[aria-label="Create post"]`);
-  //     console.log('createPost--', createPost);
-
-  //     return createPost;
-  //   };
-  //   // setCreatePostBtnEle(getSidebar());
-
-  //   // window?.addEventListener('resize', () => {
-  //   //   setCreatePostBtnEle(getSidebar());
-  //   // });
-  // }, []);
   React.useEffect(() => {
     const createPostBtnEle = document?.querySelector(config.pages.createPostBtnSelector);
 
@@ -224,10 +213,31 @@ const OverlayView = () => {
       // createPostBtnEle?.removeEventListener('click', createPostBtnHandler);
       createPostBtnEle?.addEventListener('click', createPostBtnHandler);
     }
+    getMediaContainer();
   }, []);
 
+  const getMediaContainer = () => {
+    const addMediaContainer = document.querySelector(config.pages.addMediaBtnSelector);
+
+    if (!addMediaContainer) {
+      setTimeout(getMediaContainer, 300);
+      return;
+    }
+    const addMediaBtns = addMediaContainer?.querySelectorAll('button') ?? [];
+    const mediaBtn: HTMLButtonElement = [...addMediaBtns].find((ele: Element) => ele.textContent === 'Media');
+
+    mediaBtn.addEventListener('click', () => {
+      const mediaFileInput: HTMLInputElement = document.querySelector(config.pages.mediaInputField);
+
+      mediaFileInput?.addEventListener('change', async (event: any) => {
+        const files = event?.target?.files;
+        imageFileHandler(files);
+      });
+    });
+  };
+
   // Function to handle checkbox toggle
-  const handleCheckboxChange = (access_rule_id: string) => {
+  const handleCheckboxChange = (access_rule_id: string, amount: number) => {
     setError(null);
     const existing = selected.find(item => item.access_rule_id === access_rule_id);
 
@@ -236,7 +246,10 @@ const OverlayView = () => {
       setSelected(selected.filter(item => item.access_rule_id !== access_rule_id));
     } else {
       // Add new rule with empty date and time if not already selected
-      setSelected([...selected, { access_rule_id, date: '', time: dayjs().minute(0).format('HH:mm'), date_time: '' }]);
+      setSelected([
+        ...selected,
+        { access_rule_id, date: '', amount, time: dayjs().minute(0).format('HH:mm'), date_time: '' },
+      ]);
     }
   };
   // Function to handle the combined DateTime validation
@@ -298,6 +311,8 @@ const OverlayView = () => {
 
     return true;
   };
+  console.log('data rules', { data });
+
   const scheduleBtnListener = React.useCallback(scheduleBtnClick, []);
   const handleClose = async () => {
     if (schedulingCounter?.usedCounter === 2 && !schedulingCounter?.hasAnswered) {
@@ -313,6 +328,18 @@ const OverlayView = () => {
       }
 
       setIsOpen(false);
+      console.log('selected', { selected });
+
+      // // filter the tiers those have same date time selected
+
+      // const filteredSameDateTime = selected.filter(
+      //   item => item.amount > 0 && selected.some(obj => obj.date_time === item.date_time),
+      // );
+
+      // const filteredDifferentDateTimeOrAmountNull = selected.filter(
+      //   item => item.amount === null || !selected.every(obj => obj.date_time === item.date_time),
+      // );
+      // console.log('filteredSameDateTime', { filteredSameDateTime, filteredDifferentDateTimeOrAmountNull });
       const scheduling = selected[0];
       localStorage.setItem('scheduling-data', JSON.stringify(scheduling));
       // enable the release date element from patreon UI
@@ -363,7 +390,7 @@ const OverlayView = () => {
                     type="checkbox"
                     className="access-rules-checkbox"
                     checked={!!selected.find(item => item.access_rule_id === rules.access_rule_id)}
-                    onChange={() => handleCheckboxChange(rules.access_rule_id)}
+                    onChange={() => handleCheckboxChange(rules.access_rule_id, rules.amount_cents)}
                   />
                   <span>
                     <label className="access-rules-label">

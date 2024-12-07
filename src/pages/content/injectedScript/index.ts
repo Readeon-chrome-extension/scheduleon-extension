@@ -27,6 +27,8 @@
             type: 'access-rules',
             accessRules: accessRules?.included,
           });
+          console.log('post content', { accessRules });
+
           console.log('fields[reward]', { accessRules });
           window.parent.postMessage({
             type: 'post-content',

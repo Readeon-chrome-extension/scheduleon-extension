@@ -10,6 +10,7 @@ import isSchedulingStartStorage from '@root/src/shared/storages/isSchedulingStar
 import isWarningShowStorage from '@root/src/shared/storages/isWarningShowStorage';
 import postContentStorage from '@root/src/shared/storages/postContentStorage';
 import schedulingStorage from '@root/src/shared/storages/schedulingStorage';
+import { clearFileData } from '@root/src/shared/utils/indexDb';
 import { Clock } from 'lucide-react';
 import React from 'react';
 
@@ -50,7 +51,7 @@ const ConfirmationPopUp = () => {
     await isSchedulingStartStorage.add(false, 0, 'Pending');
     await isWarningShowStorage.add(false);
     await schedulingStorage.add([]).then();
-
+    await clearFileData();
     await fileDataStorage.set(null).then();
     await isPublishScreenStorage.setScreen(false);
     await postContentStorage.setPostContent(null);

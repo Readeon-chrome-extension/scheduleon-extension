@@ -6,6 +6,7 @@ import { BaseStorage, createStorage, StorageType } from '@src/shared/storages/ba
 interface postContentTypes {
   attributes: {
     post_type: string;
+    scheduled_for: string | null | undefined;
   };
 }
 type PostContentStorageType = BaseStorage<postContentTypes> & {

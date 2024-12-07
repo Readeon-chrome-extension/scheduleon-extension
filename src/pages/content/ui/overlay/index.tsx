@@ -92,8 +92,7 @@ refreshOnUpdate('pages/content/ui');
   };
   const checkValidView = async () => {
     const postContent = await postContentStorage.get();
-    const isEditPost = document.querySelector(config.pages.headerRootSelector)?.textContent?.includes('Edit');
-
+    const isEditPost = !!postContent?.attributes?.scheduled_for;
     if (isEditPost) {
       addWarningDiv(undefined, isEditPost);
       return false;
@@ -109,11 +108,11 @@ refreshOnUpdate('pages/content/ui');
     return true;
   };
   const addWarningDiv = (type?: 'video_external_file' | 'audio_file', isEditPost?: boolean) => {
-    const headerEle = document.querySelector(config.pages.headerRootSelector);
+    const headerEle = document.querySelector(config.pages.overlyMountRootSelector);
     const isExist = document.getElementById('scheduleon-post-warning-container');
     if (isExist) return;
 
-    if (headerEle?.parentElement?.parentElement?.parentElement) {
+    if (headerEle && window.location.pathname?.includes('edit')) {
       const warningDiv = `<div
       id="scheduleon-post-warning-container"
       style="
@@ -123,11 +122,11 @@ refreshOnUpdate('pages/content/ui');
         text-align: center;
         color: #FF7F3E;
         width:94%;
-        margin-bottom:12px;
+        margin-bottom:18px;
         font-size:14px;
       ">
-${(type === 'audio_file' || type === 'video_external_file') && !isEditPost ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'Do not use Scheduleon on draft posts. Scheduleon is only meant to be used for new posts. Also, it is highly recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
-      headerEle?.parentElement?.parentElement?.parentElement.insertAdjacentHTML('afterbegin', warningDiv);
+${(type === 'audio_file' || type === 'video_external_file') && !isEditPost ? 'Scheduleon does not support audio or video posts.' : isEditPost ? 'Scheduleon does not support editing a scheduled or submitted post.' : 'If you wish to use Scheduleon on draft posts, then make sure you remove and re-attach any attached files on the post before proceeding. Also, it is recommended to add attachments one at a time rather than all at once for a smooth experience.'}  </div>`;
+      headerEle?.firstElementChild?.firstElementChild?.insertAdjacentHTML('afterbegin', warningDiv);
     }
   };
 
@@ -214,7 +213,10 @@ ${(type === 'audio_file' || type === 'video_external_file') && !isEditPost ? 'Sc
   // Start the observer
   // trackUrlChanges();
 
-  reportIssuePatreon();
+  setTimeout(() => {
+    reportIssuePatreon();
+  }, 1000);
+
   //* this function runs one time and inject the buttons into the sidebar
   injectButtonListener();
 })();

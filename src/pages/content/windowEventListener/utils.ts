@@ -111,8 +111,7 @@ const makeCreatePostCall = async (headers: headersType, csrf: string, postType: 
 
 // adding the attachments with post
 const attachMedia = async (postId: string, headers: headersType, csrf: string, parsedFiles: FileData[]) => {
-  const responseArray = [];
-  await Promise.all(
+  const responseArray = await Promise.all(
     parsedFiles.map(async file => {
       const fileData = new File([file.data], file.name, { type: file.type });
       const payload = {
@@ -148,10 +147,6 @@ const attachMedia = async (postId: string, headers: headersType, csrf: string, p
       const response = await axios.request(mediaConfig);
       const responseData = response.data;
 
-      if (file.media_type === 'image_data') {
-        responseArray.push(responseData);
-      }
-
       // Extract Upload Parameters
       const uploadParameters: UploadParameters = responseData.data.attributes.upload_parameters;
       const formData = new FormData();
@@ -175,10 +170,15 @@ const attachMedia = async (postId: string, headers: headersType, csrf: string, p
       };
 
       await axios.request(uploadConfig);
+      console.log('Response ID', { responseData });
+
+      // Return the media ID only for image_data
+      return file.media_type === 'image_data' ? responseData?.data?.id : null;
     }),
   );
 
-  return responseArray;
+  // Filter out null values and return the array
+  return responseArray.filter(id => id !== null);
 };
 
 //updating the post
@@ -204,14 +204,14 @@ const makePatchCall = async (
   if (allFiles?.length) {
     imageMediaResponse = await attachMedia(postId, headers, csrf ?? headers['X-CSRF-Signature'], allFiles);
   }
+  console.log('image id response', { imageMediaResponse });
 
   //sending the updated payload
   payload.data.attributes.scheduled_for = date_time;
   payload.data.attributes.tags.publish = false;
 
   //adding the image ids with post
-  payload.data.attributes.post_metadata.image_order =
-    postType === 'image_file' ? imageMediaResponse?.map((item: any) => item.data?.id) ?? [] : [];
+  payload.data.attributes.post_metadata.image_order = postType === 'image_file' ? imageMediaResponse : [];
 
   payload.data.relationships['access-rule'].data = accessRules;
   payload.data.relationships['access_rules'].data = [accessRules];

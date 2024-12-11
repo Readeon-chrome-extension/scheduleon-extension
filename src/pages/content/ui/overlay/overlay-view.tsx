@@ -328,7 +328,6 @@ const OverlayView = () => {
       }
 
       setIsOpen(false);
-      console.log('selected', { selected });
 
       // // filter the tiers those have same date time selected
 

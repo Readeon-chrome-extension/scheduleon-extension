@@ -46,7 +46,6 @@ export const createPayloadObj = payloadObj => {
 
 export const schedulingStart = async (body: any, headers: headersType, url: string) => {
   const schedulingData = await schedulingStorage.get();
-  console.log('schedulingData', { schedulingData });
 
   if (!schedulingData?.length) return;
 
@@ -71,7 +70,7 @@ export const schedulingStart = async (body: any, headers: headersType, url: stri
         url,
       );
 
-      await delay(5000);
+      await delay(8000);
     } catch (error) {
       console.log('error', { error });
     }
@@ -204,7 +203,6 @@ const makePatchCall = async (
   if (allFiles?.length) {
     imageMediaResponse = await attachMedia(postId, headers, csrf ?? headers['X-CSRF-Signature'], allFiles);
   }
-  console.log('image id response', { imageMediaResponse });
 
   //sending the updated payload
   payload.data.attributes.scheduled_for = date_time;
